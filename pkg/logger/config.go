@@ -3,5 +3,5 @@ package logger
 type Config struct {
 	Development bool   `koanf:"development"`
 	Encoding    string `koanf:"encoding"`
-	Level       string `koanf:"level"`
+	Level       string `koanf:"level" validate:"required"`
 }

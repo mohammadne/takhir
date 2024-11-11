@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/adaptor"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -24,6 +26,8 @@ func New(log *zap.Logger) *Server {
 	// ----------------------------------------- Master Endpoints
 
 	server.masterApp = fiber.New(fiberConfig)
+
+	server.masterApp.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
 	server.masterApp.Get("/healthz/liveness", server.liveness)
 	server.masterApp.Get("/healthz/readiness", server.readiness)
