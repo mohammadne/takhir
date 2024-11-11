@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS vendors(
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(30),
+	email VARCHAR(50) NOT NULL,
+	password VARCHAR(30) NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX vendors_email_idx ON vendors (email);

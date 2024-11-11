@@ -1,4 +1,4 @@
-package rdbms
+package repository
 
 type Config struct {
 	Host     string `koanf:"host"`
