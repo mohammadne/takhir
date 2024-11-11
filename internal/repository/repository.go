@@ -34,10 +34,10 @@ const (
 func Connect(cfg *Config, lg *zap.Logger) (Repository, error) {
 	connString := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.Database,
+		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Database,
 	)
 
-	database, err := sqlx.Open("pgx", connString)
+	database, err := sqlx.Open("postgres", connString)
 	if err != nil {
 		errString := "Error while opening connection to postgresql"
 		lg.Error(errString, zap.Error(err))

@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"context"
-	"os/signal"
-	"syscall"
 
 	"github.com/mohammadne/takhir/internal/config"
 	"github.com/mohammadne/takhir/internal/http"
@@ -13,8 +11,6 @@ import (
 )
 
 type Server struct {
-	ctx context.Context
-
 	ports struct {
 		master int
 	}
@@ -23,18 +19,12 @@ type Server struct {
 	logger *zap.Logger
 }
 
-func (server Server) Command() *cobra.Command {
+func (server Server) Command(ctx context.Context) *cobra.Command {
 	run := func(_ *cobra.Command, _ []string) {
-		var stop context.CancelFunc
-		server.ctx, stop = signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-		defer stop()
-
 		server.initialize()
-		server.start()
-		defer server.stop()
-
-		<-server.ctx.Done()
-		server.logger.Warn("Got interruption signal, gracefully shutdown the server")
+		server.run()
+		<-ctx.Done()
+		server.stop()
 	}
 
 	cmd := &cobra.Command{
@@ -43,7 +33,7 @@ func (server Server) Command() *cobra.Command {
 		Run:   run,
 	}
 
-	cmd.Flags().IntVar(&server.ports.master, "master-port", 8000, "The port the metric and probe endpoints binds to")
+	cmd.Flags().IntVar(&server.ports.master, "master-port", 8000, "The port the metric and probes are bind to")
 
 	return cmd
 }
@@ -52,16 +42,13 @@ func (server *Server) initialize() {
 	server.config = config.Load(true)
 	server.logger = logger.NewZap(server.config.Logger)
 
-	server.logger.Info("initialize")
+	server.logger.Info("server has been fully initialized")
 }
 
-func (server *Server) start() {
-	server.logger.Info("start")
-
-	http.New(server.logger).
-		Serve(server.ports.master, 8080)
+func (server *Server) run() {
+	http.New(server.logger).Serve(server.ports.master, 8080)
 }
 
 func (server *Server) stop() {
-	server.logger.Info("stop")
+	server.logger.Warn("interruption signal recieved, gracefully shutdown the server")
 }
