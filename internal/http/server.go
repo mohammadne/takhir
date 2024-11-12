@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,6 +10,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	"github.com/mohammadne/takhir/pkg/stackerr"
 )
 
 type Server struct {
@@ -17,6 +20,34 @@ type Server struct {
 
 	masterApp *fiber.App
 	clientApp *fiber.App
+}
+
+func SampleError() error {
+	// pc := make([]uintptr, 15)
+	// n := runtime.Callers(2, pc)
+	// frames := runtime.CallersFrames(pc[:n])
+	// frame, _ := frames.Next()
+
+	// trace := fmt.Sprintf("%s:%d %s\n", frame.File, frame.Line, frame.Function)
+
+	// err := errors.New("some error happened")
+	return stackerr.Wrap(child1(), "error in SampleError")
+
+	// return tracerr.Wrap(err)
+	// return fmt.Errorf("child module error at someFunction: %w", err)
+	// return fmt.Errorf("child module error at someFunction: %w", err)
+}
+
+func child1() error {
+	return stackerr.Wrap(child2(), "error while calling child3")
+}
+
+func child2() error {
+	return stackerr.Wrap(child3(), "error while calling child3")
+}
+
+func child3() error {
+	return errors.New("error from 3rd module")
 }
 
 func New(log *zap.Logger) *Server {

@@ -6,6 +6,7 @@ import (
 	"github.com/mohammadne/takhir/internal/config"
 	"github.com/mohammadne/takhir/internal/http"
 	"github.com/mohammadne/takhir/pkg/logger"
+	"github.com/mohammadne/takhir/pkg/stackerr"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -41,6 +42,12 @@ func (server Server) Command(ctx context.Context) *cobra.Command {
 func (server *Server) initialize() {
 	server.config = config.Load(true)
 	server.logger = logger.NewZap(server.config.Logger)
+
+	if err := http.SampleError(); err != nil {
+		server.logger.Fatal("server has been fully initialized",
+			stackerr.ZapFields(err)...)
+		// return
+	}
 
 	server.logger.Info("server has been fully initialized")
 }
