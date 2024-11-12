@@ -6,8 +6,14 @@ import (
 )
 
 func ZapFields(err error) []zapcore.Field {
+	s, ok := err.(Stakerr)
+	if ok {
+		return []zapcore.Field{
+			zap.Stringers("stacktrace", s.StackTrace()),
+			zap.Error(err),
+		}
+	}
 	return []zapcore.Field{
-		zap.Stringers("stacktrace", StackTrace(err)),
 		zap.Error(err),
 	}
 }

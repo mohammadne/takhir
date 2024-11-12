@@ -51,8 +51,5 @@ func getLoggerLevel(cfg *Config) zap.AtomicLevel {
 }
 
 func getOptions(cfg *Config) []zap.Option {
-	return []zap.Option{
-		zap.AddStacktrace(zap.ErrorLevel),
-		zap.AddCaller(),
-	}
+	return []zap.Option{}
 }
