@@ -2,7 +2,6 @@ package http
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,44 +9,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-
-	"github.com/mohammadne/takhir/pkg/stackerr"
 )
 
 type Server struct {
 	logger *zap.Logger
 	// repository repository.Repository
 
-	masterApp *fiber.App
-	clientApp *fiber.App
-}
-
-func SampleError() error {
-	// pc := make([]uintptr, 15)
-	// n := runtime.Callers(2, pc)
-	// frames := runtime.CallersFrames(pc[:n])
-	// frame, _ := frames.Next()
-
-	// trace := fmt.Sprintf("%s:%d %s\n", frame.File, frame.Line, frame.Function)
-
-	// err := errors.New("some error happened")
-	return stackerr.Wrap(child1(), "error in SampleError")
-
-	// return tracerr.Wrap(err)
-	// return fmt.Errorf("child module error at someFunction: %w", err)
-	// return fmt.Errorf("child module error at someFunction: %w", err)
-}
-
-func child1() error {
-	return stackerr.Wrap(child2(), "error while calling child3")
-}
-
-func child2() error {
-	return stackerr.Wrap(child3(), "error while calling child3")
-}
-
-func child3() error {
-	return errors.New("error from 3rd module")
+	monitorApp *fiber.App
+	clientApp  *fiber.App
 }
 
 func New(log *zap.Logger) *Server {
@@ -56,12 +25,12 @@ func New(log *zap.Logger) *Server {
 
 	// ----------------------------------------- Master Endpoints
 
-	server.masterApp = fiber.New(fiberConfig)
+	server.monitorApp = fiber.New(fiberConfig)
 
-	server.masterApp.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
+	server.monitorApp.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
-	server.masterApp.Get("/healthz/liveness", server.liveness)
-	server.masterApp.Get("/healthz/readiness", server.readiness)
+	server.monitorApp.Get("/healthz/liveness", server.liveness)
+	server.monitorApp.Get("/healthz/readiness", server.readiness)
 
 	// ----------------------------------------- Client Endpoints
 
@@ -84,13 +53,13 @@ func New(log *zap.Logger) *Server {
 	return server
 }
 
-func (server *Server) Serve(master, client int) {
+func (server *Server) Serve(monitor, client int) {
 	runnables := []struct {
 		port        int
 		app         *fiber.App
 		description string
 	}{
-		{master, server.masterApp, "master server"},
+		{monitor, server.monitorApp, "monitor server"},
 		{client, server.clientApp, "client server"},
 	}
 

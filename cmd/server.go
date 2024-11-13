@@ -6,14 +6,14 @@ import (
 	"github.com/mohammadne/takhir/internal/config"
 	"github.com/mohammadne/takhir/internal/http"
 	"github.com/mohammadne/takhir/pkg/logger"
-	"github.com/mohammadne/takhir/pkg/stackerr"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
 
 type Server struct {
 	ports struct {
-		master int
+		monitor int
+		client  int
 	}
 
 	config *config.Config
@@ -34,7 +34,8 @@ func (server Server) Command(ctx context.Context) *cobra.Command {
 		Run:   run,
 	}
 
-	cmd.Flags().IntVar(&server.ports.master, "master-port", 8000, "The port the metric and probes are bind to")
+	cmd.Flags().IntVar(&server.ports.monitor, "monitor-port", 8000, "The port the metric and probes are bind to")
+	cmd.Flags().IntVar(&server.ports.client, "client-port", 8001, "The server port which handles client requests")
 
 	return cmd
 }
@@ -43,17 +44,11 @@ func (server *Server) initialize() {
 	server.config = config.Load(true)
 	server.logger = logger.NewZap(server.config.Logger)
 
-	if err := http.SampleError(); err != nil {
-		server.logger.Fatal("server has been fully initialized",
-			stackerr.ZapFields(err)...)
-		// return
-	}
-
 	server.logger.Info("server has been fully initialized")
 }
 
 func (server *Server) run() {
-	http.New(server.logger).Serve(server.ports.master, 8080)
+	http.New(server.logger).Serve(server.ports.monitor, server.ports.client)
 }
 
 func (server *Server) stop() {
