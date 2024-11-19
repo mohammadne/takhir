@@ -1,9 +1,0 @@
-CREATE TABLE IF NOT EXISTS users(
-	id SERIAL PRIMARY KEY,
-	name VARCHAR(30),
-	email VARCHAR(60) NOT NULL,
-	password VARCHAR(30) NOT NULL,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
-CREATE UNIQUE INDEX idx_unique_users_email ON users (email);
