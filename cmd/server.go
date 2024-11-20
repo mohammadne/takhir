@@ -5,6 +5,7 @@ import (
 
 	"github.com/mohammadne/takhir/internal/config"
 	"github.com/mohammadne/takhir/internal/http"
+	"github.com/mohammadne/takhir/internal/http/handlers"
 	"github.com/mohammadne/takhir/pkg/logger"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -48,7 +49,13 @@ func (server *Server) initialize() {
 }
 
 func (server *Server) run() {
-	http.New(server.logger).Serve(server.ports.monitor, server.ports.client)
+	handlers := &http.Handlers{
+		Healthz: handlers.NewHealthz(),
+		Items:   handlers.NewItems(),
+	}
+
+	http.New(server.logger, handlers).
+		Serve(server.ports.monitor, server.ports.client)
 }
 
 func (server *Server) stop() {

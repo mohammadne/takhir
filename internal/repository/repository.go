@@ -10,25 +10,28 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/mohammadne/takhir/internal/repository/items"
 	"go.uber.org/zap"
-
-	"github.com/mohammadne/takhir/internal/repository/tables"
 )
 
 type Repository interface {
 	MigrateUp(context.Context) error
 	MigrateDown(context.Context) error
 
-	tables.Vendor
+	items.Items
 }
 
 type repository struct {
 	logger             *zap.Logger
 	database           *sqlx.DB
 	migrationDirectory string
+
+	// repositories
+	items.Items
 }
 
 const (
+	driver      = "postgres"
 	pingTimeout = time.Second * 20
 )
 
@@ -38,7 +41,7 @@ func Connect(cfg *Config, lg *zap.Logger) (Repository, error) {
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Database,
 	)
 
-	database, err := sqlx.Open("postgres", connString)
+	database, err := sqlx.Open(driver, connString)
 	if err != nil {
 		errString := "Error while opening connection to postgresql"
 		lg.Error(errString, zap.Error(err))
@@ -56,7 +59,10 @@ func Connect(cfg *Config, lg *zap.Logger) (Repository, error) {
 	}
 
 	r := &repository{logger: lg, database: database}
-	r.migrationDirectory = "file://internal/repository/migrations"
+	r.migrationDirectory = "file://hacks/migrations"
+
+	// initialize repositories
+	r.Items = items.New(database)
 
 	return r, nil
 }
@@ -77,7 +83,7 @@ func (r *repository) migrate(source string, migrator func(*migrate.Migrate) erro
 		return fmt.Errorf("Error creating migrate instance\n%v", err)
 	}
 
-	migration, err := migrate.NewWithDatabaseInstance(source, "postgres", instance)
+	migration, err := migrate.NewWithDatabaseInstance(source, driver, instance)
 	if err != nil {
 		return fmt.Errorf("Error loading migration files\n%v", err)
 	}

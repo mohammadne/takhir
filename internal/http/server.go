@@ -6,38 +6,47 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
+	"github.com/mohammadne/takhir/internal/http/handlers"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 type Server struct {
-	logger *zap.Logger
-	// repository repository.Repository
+	logger   *zap.Logger
+	handlers *Handlers
 
 	monitorApp *fiber.App
 	clientApp  *fiber.App
 }
 
-func New(log *zap.Logger) *Server {
-	server := &Server{logger: log}
+type Handlers struct {
+	Healthz handlers.Healthz
+	Items   handlers.Items
+}
+
+func New(log *zap.Logger, handlers *Handlers) *Server {
+	server := &Server{logger: log, handlers: handlers}
 	fiberConfig := fiber.Config{JSONEncoder: json.Marshal, JSONDecoder: json.Unmarshal}
 
-	// ----------------------------------------- Master Endpoints
+	// ----------------------------------------- Monitor Endpoints
 
 	server.monitorApp = fiber.New(fiberConfig)
 
 	server.monitorApp.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
-	server.monitorApp.Get("/healthz/liveness", server.liveness)
-	server.monitorApp.Get("/healthz/readiness", server.readiness)
+	healthzGroup := server.monitorApp.Group("healthz")
+	healthzGroup.Get("/liveness", server.handlers.Healthz.Liveness)
+	healthzGroup.Get("/readiness", server.handlers.Healthz.Readiness)
 
 	// ----------------------------------------- Client Endpoints
 
 	server.clientApp = fiber.New(fiberConfig)
 
 	v1 := server.clientApp.Group("api/v1")
-	_ = v1
+
+	itemsGroup := v1.Group("items")
+	itemsGroup.Get("/", server.handlers.Items.List)
 
 	// auth := v1.Group("auth")
 	// auth.Post("/register", server.register)
