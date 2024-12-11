@@ -10,7 +10,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/mohammadne/takhir/internal/repository/items"
+	"github.com/mohammadne/takhir/internal/repository/schemas"
 	"go.uber.org/zap"
 )
 
@@ -18,7 +18,7 @@ type Repository interface {
 	MigrateUp(context.Context) error
 	MigrateDown(context.Context) error
 
-	items.Items
+	schemas.Items
 }
 
 type repository struct {
@@ -27,7 +27,7 @@ type repository struct {
 	migrationDirectory string
 
 	// repositories
-	items.Items
+	schemas.Items
 }
 
 const (
@@ -62,7 +62,7 @@ func Connect(cfg *Config, lg *zap.Logger) (Repository, error) {
 	r.migrationDirectory = "file://hacks/migrations"
 
 	// initialize repositories
-	r.Items = items.New(database)
+	r.Items = schemas.NewItems(database)
 
 	return r, nil
 }

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS credentials (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL, FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     method VARCHAR(50) CHECK (method IN ('phone', 'email', 'oauth')) NOT NULL,
     identifier VARCHAR(255) NOT NULL, -- Email address, phone number, or OAuth provider ID
     password_hash VARCHAR(255), -- Hashed password or null for OAuth
