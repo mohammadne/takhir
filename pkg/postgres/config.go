@@ -1,4 +1,4 @@
-package repository
+package postgres
 
 type Config struct {
 	Host     string `koanf:"host"`

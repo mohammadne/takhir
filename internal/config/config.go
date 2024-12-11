@@ -1,11 +1,11 @@
 package config
 
 import (
-	"github.com/mohammadne/takhir/internal/repository"
 	"github.com/mohammadne/takhir/pkg/logger"
+	"github.com/mohammadne/takhir/pkg/postgres"
 )
 
 type Config struct {
-	Repository *repository.Config `koanf:"repository"`
-	Logger     *logger.Config     `koanf:"logger"`
+	Logger   *logger.Config   `koanf:"logger"`
+	Postgres *postgres.Config `koanf:"postgres"`
 }

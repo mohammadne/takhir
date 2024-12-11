@@ -1,14 +1,14 @@
 ---
-repository:
+logger:
+  development: true
+  level: "info"
+  encoding: "console"
+postgres:
   host: "localhost"
   port: 5432
   user: "TAKHIR_USER"
   password: "TAKHIR_PASSWORD"
   database: "TAKHIR_DB"
-logger:
-  development: true
-  level: "info"
-  encoding: "console"
 tcp:
   secure_port: 8443
   insecure_port: 8080
