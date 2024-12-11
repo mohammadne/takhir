@@ -1,21 +1,22 @@
 package handlers
 
 import (
-	"net/http"
-
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
-type Items interface {
-	List(c *fiber.Ctx) error
+func NewItems(router fiber.Router, logger *zap.Logger) {
+	items := &items{logger: logger}
+
+	group := router.Group("items")
+	group.Get("/", items.list)
+	// group.Get("/:id", server.getItem)
 }
 
-func NewItems() Items {
-	return &items{}
+type items struct {
+	logger *zap.Logger
 }
 
-type items struct{}
-
-func (i *items) List(c *fiber.Ctx) error {
-	return c.SendStatus(http.StatusOK)
+func (i *items) list(c *fiber.Ctx) error {
+	return c.SendString("items")
 }

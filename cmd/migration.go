@@ -14,7 +14,7 @@ type Migration struct {
 	config    *config.Config
 	logger    *zap.Logger
 	direction string
-	postgres  *postgres.Postgresql
+	postgres  *postgres.Postgres
 }
 
 const (

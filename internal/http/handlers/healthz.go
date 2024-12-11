@@ -4,23 +4,24 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
-type Healthz interface {
-	Liveness(c *fiber.Ctx) error
-	Readiness(c *fiber.Ctx) error
+func NewHealthz(router fiber.Router, logger *zap.Logger) {
+	healthz := &healthz{logger: logger}
+
+	router.Get("/liveness", healthz.liveness)
+	router.Get("/readiness", healthz.readiness)
 }
 
-func NewHealthz() Healthz {
-	return &healthz{}
+type healthz struct {
+	logger *zap.Logger
 }
 
-type healthz struct{}
-
-func (h *healthz) Liveness(c *fiber.Ctx) error {
+func (h *healthz) liveness(c *fiber.Ctx) error {
 	return c.SendStatus(http.StatusOK)
 }
 
-func (h *healthz) Readiness(c *fiber.Ctx) error {
+func (h *healthz) readiness(c *fiber.Ctx) error {
 	return c.SendStatus(http.StatusOK)
 }

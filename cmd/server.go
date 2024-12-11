@@ -5,8 +5,8 @@ import (
 
 	"github.com/mohammadne/takhir/internal/config"
 	"github.com/mohammadne/takhir/internal/http"
-	"github.com/mohammadne/takhir/internal/http/handlers"
 	"github.com/mohammadne/takhir/pkg/logger"
+	"github.com/mohammadne/takhir/pkg/postgres"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -17,16 +17,17 @@ type Server struct {
 		client  int
 	}
 
-	config *config.Config
-	logger *zap.Logger
+	config   *config.Config
+	logger   *zap.Logger
+	postgres *postgres.Postgres
 }
 
-func (server Server) Command(ctx context.Context) *cobra.Command {
+func (s Server) Command(ctx context.Context) *cobra.Command {
 	run := func(_ *cobra.Command, _ []string) {
-		server.initialize()
-		server.run()
+		s.initialize()
+		s.run()
 		<-ctx.Done()
-		server.stop()
+		s.stop()
 	}
 
 	cmd := &cobra.Command{
@@ -35,29 +36,29 @@ func (server Server) Command(ctx context.Context) *cobra.Command {
 		Run:   run,
 	}
 
-	cmd.Flags().IntVar(&server.ports.monitor, "monitor-port", 8000, "The port the metric and probes are bind to")
-	cmd.Flags().IntVar(&server.ports.client, "client-port", 8001, "The server port which handles client requests")
+	cmd.Flags().IntVar(&s.ports.monitor, "monitor-port", 8000, "The port the metric and probes are bind to")
+	cmd.Flags().IntVar(&s.ports.client, "client-port", 8001, "The server port which handles client requests")
 
 	return cmd
 }
 
-func (server *Server) initialize() {
-	server.config = config.Load(true)
-	server.logger = logger.NewZap(server.config.Logger)
+func (s *Server) initialize() {
+	s.config = config.Load(true)
+	s.logger = logger.NewZap(s.config.Logger)
 
-	server.logger.Info("server has been fully initialized")
-}
-
-func (server *Server) run() {
-	handlers := &http.Handlers{
-		Healthz: handlers.NewHealthz(),
-		Items:   handlers.NewItems(),
+	postgres, err := postgres.Open(s.config.Postgres, "file://hacks/migrations")
+	if err != nil {
+		s.logger.Fatal("error connecting to postgresql database", zap.Error(err))
 	}
+	s.postgres = postgres
 
-	http.New(server.logger, handlers).
-		Serve(server.ports.monitor, server.ports.client)
+	s.logger.Info("server has been fully initialized")
 }
 
-func (server *Server) stop() {
-	server.logger.Warn("interruption signal recieved, gracefully shutdown the server")
+func (s *Server) run() {
+	http.New(s.logger).Serve(s.ports.monitor, s.ports.client)
+}
+
+func (s *Server) stop() {
+	s.logger.Warn("interruption signal recieved, gracefully shutdown the server")
 }

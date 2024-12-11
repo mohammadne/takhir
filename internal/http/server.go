@@ -13,20 +13,14 @@ import (
 )
 
 type Server struct {
-	logger   *zap.Logger
-	handlers *Handlers
+	logger *zap.Logger
 
 	monitorApp *fiber.App
 	clientApp  *fiber.App
 }
 
-type Handlers struct {
-	Healthz handlers.Healthz
-	Items   handlers.Items
-}
-
-func New(log *zap.Logger, handlers *Handlers) *Server {
-	server := &Server{logger: log, handlers: handlers}
+func New(log *zap.Logger) *Server {
+	server := &Server{logger: log}
 	fiberConfig := fiber.Config{JSONEncoder: json.Marshal, JSONDecoder: json.Unmarshal}
 
 	// ----------------------------------------- Monitor Endpoints
@@ -34,30 +28,15 @@ func New(log *zap.Logger, handlers *Handlers) *Server {
 	server.monitorApp = fiber.New(fiberConfig)
 
 	server.monitorApp.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
-
-	healthzGroup := server.monitorApp.Group("healthz")
-	healthzGroup.Get("/liveness", server.handlers.Healthz.Liveness)
-	healthzGroup.Get("/readiness", server.handlers.Healthz.Readiness)
+	handlers.NewHealthz(server.monitorApp, log)
 
 	// ----------------------------------------- Client Endpoints
 
 	server.clientApp = fiber.New(fiberConfig)
 
 	v1 := server.clientApp.Group("api/v1")
-
-	itemsGroup := v1.Group("items")
-	itemsGroup.Get("/", server.handlers.Items.List)
-
-	// auth := v1.Group("auth")
-	// auth.Post("/register", server.register)
-	// auth.Post("/login", server.login)
-
-	// contacts := v1.Group("contacts", server.fetchUserId)
-	// contacts.Get("/", server.getContacts)
-	// contacts.Post("/", server.createContact)
-	// contacts.Get("/:id", server.getContact)
-	// contacts.Put("/:id", server.updateContact)
-	// contacts.Delete("/:id", server.deleteContact)
+	handlers.NewCategories(v1, log)
+	handlers.NewItems(v1, log)
 
 	return server
 }

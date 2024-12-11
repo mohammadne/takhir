@@ -12,7 +12,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Postgresql struct {
+type Postgres struct {
 	*sqlx.DB
 	migrations string
 }
@@ -22,7 +22,7 @@ const (
 	pingTimeout = time.Second * 20
 )
 
-func Open(cfg *Config, migrations string) (*Postgresql, error) {
+func Open(cfg *Config, migrations string) (*Postgres, error) {
 	connString := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Database,
@@ -41,22 +41,22 @@ func Open(cfg *Config, migrations string) (*Postgresql, error) {
 		return nil, fmt.Errorf("error while pinging database: %v", err)
 	}
 
-	r := &Postgresql{DB: database, migrations: migrations}
+	r := &Postgres{DB: database, migrations: migrations}
 
 	return r, nil
 }
 
-func (r *Postgresql) MigrateUp(ctx context.Context) error {
+func (r *Postgres) MigrateUp(ctx context.Context) error {
 	migrator := func(m *migrate.Migrate) error { return m.Up() }
 	return r.migrate(r.migrations, migrator)
 }
 
-func (r *Postgresql) MigrateDown(ctx context.Context) error {
+func (r *Postgres) MigrateDown(ctx context.Context) error {
 	migrator := func(m *migrate.Migrate) error { return m.Down() }
 	return r.migrate(r.migrations, migrator)
 }
 
-func (r *Postgresql) migrate(source string, migrator func(*migrate.Migrate) error) error {
+func (r *Postgres) migrate(source string, migrator func(*migrate.Migrate) error) error {
 	instance, err := postgres.WithInstance(r.DB.DB, &postgres.Config{})
 	if err != nil {
 		return fmt.Errorf("error creating migrate instance\n%v", err)
