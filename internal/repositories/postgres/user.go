@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"github.com/mohammadne/takhir/pkg/postgres"
+	"github.com/mohammadne/takhir/pkg/databases/postgres"
 	"go.uber.org/zap"
 )
 

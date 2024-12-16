@@ -1,5 +1,6 @@
 package internal
 
 const (
-	System = "takhir"
+	Namespace = "takhir"
+	System    = "takhir"
 )

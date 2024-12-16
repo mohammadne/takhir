@@ -5,8 +5,8 @@ import (
 
 	"github.com/mohammadne/takhir/internal/config"
 	"github.com/mohammadne/takhir/internal/transport/http"
+	"github.com/mohammadne/takhir/pkg/databases/postgres"
 	"github.com/mohammadne/takhir/pkg/logger"
-	"github.com/mohammadne/takhir/pkg/postgres"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )

@@ -10,11 +10,19 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/mohammadne/takhir/internal"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type Postgres struct {
 	*sqlx.DB
 	migrations string
+	Vectors    *vectors
+}
+
+type vectors struct {
+	Counter   *prometheus.CounterVec
+	Histogram *prometheus.HistogramVec
 }
 
 const (
@@ -41,7 +49,35 @@ func Open(cfg *Config, migrations string) (*Postgres, error) {
 		return nil, fmt.Errorf("error while pinging database: %v", err)
 	}
 
-	r := &Postgres{DB: database, migrations: migrations}
+	var vectors vectors
+	{
+		name := "postgres"
+		labels := []string{""}
+		buckets := []float64{.005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5}
+
+		vectors.Counter = prometheus.NewCounterVec(prometheus.CounterOpts{
+			Help:      "counter vector for postgres",
+			Namespace: internal.Namespace,
+			Subsystem: internal.System,
+			Name:      name,
+		}, labels)
+		if err := prometheus.Register(vectors.Counter); err != nil {
+			return nil, fmt.Errorf("error while registering counter vector: %v", err)
+		}
+
+		vectors.Histogram = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+			Help:      "histogram vector for postgres",
+			Namespace: internal.Namespace,
+			Subsystem: internal.System,
+			Name:      name,
+			Buckets:   buckets,
+		}, labels)
+		if err := prometheus.Register(vectors.Histogram); err != nil {
+			return nil, fmt.Errorf("error while registering histogram vector: %v", err)
+		}
+	}
+
+	r := &Postgres{DB: database, migrations: migrations, Vectors: &vectors}
 
 	return r, nil
 }

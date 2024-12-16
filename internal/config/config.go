@@ -1,8 +1,8 @@
 package config
 
 import (
+	"github.com/mohammadne/takhir/pkg/databases/postgres"
 	"github.com/mohammadne/takhir/pkg/logger"
-	"github.com/mohammadne/takhir/pkg/postgres"
 )
 
 type Config struct {
