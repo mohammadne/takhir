@@ -11,6 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/mohammadne/takhir/internal"
+	"github.com/mohammadne/takhir/pkg/metrics"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -21,7 +22,7 @@ type Postgres struct {
 }
 
 type vectors struct {
-	Counter   *prometheus.CounterVec
+	Counter   metrics.Counter
 	Histogram *prometheus.HistogramVec
 }
 
@@ -55,13 +56,8 @@ func Open(cfg *Config, migrations string) (*Postgres, error) {
 		labels := []string{""}
 		buckets := []float64{.005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5}
 
-		vectors.Counter = prometheus.NewCounterVec(prometheus.CounterOpts{
-			Help:      "counter vector for postgres",
-			Namespace: internal.Namespace,
-			Subsystem: internal.System,
-			Name:      name,
-		}, labels)
-		if err := prometheus.Register(vectors.Counter); err != nil {
+		vectors.Counter, err = metrics.RegisterCounter(name, internal.Namespace, internal.Namespace, labels)
+		if err != nil {
 			return nil, fmt.Errorf("error while registering counter vector: %v", err)
 		}
 
