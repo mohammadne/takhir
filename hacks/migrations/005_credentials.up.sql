@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS credentials (
     identifier VARCHAR(255) NOT NULL, -- Email address, phone number, or OAuth provider ID
     password_hash VARCHAR(255), -- Hashed password or null for OAuth
     oauth_provider VARCHAR(50), -- 'Google', 'Facebook' and etc only for OAuth
+    verification_code VARCHAR(6), -- For phone/email only
+    verified BOOLEAN DEFAULT FALSE, -- For phone/email to track verification status
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

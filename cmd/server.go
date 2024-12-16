@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/mohammadne/takhir/internal/config"
-	"github.com/mohammadne/takhir/internal/http"
+	"github.com/mohammadne/takhir/internal/transport/http"
 	"github.com/mohammadne/takhir/pkg/logger"
 	"github.com/mohammadne/takhir/pkg/postgres"
 	"github.com/spf13/cobra"

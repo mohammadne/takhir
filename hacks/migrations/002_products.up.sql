@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS items (
+CREATE TABLE IF NOT EXISTS products (
 	id SERIAL PRIMARY KEY,
 	name VARCHAR(128),
 	description TEXT,
@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS items (
 	deleted_at TIMESTAMP
 );
 
-CREATE INDEX idx_items_category_id ON items (category_id);
+CREATE INDEX idx_products_category_id ON products (category_id);
