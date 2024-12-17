@@ -12,32 +12,6 @@ import (
 	"github.com/mohammadne/takhir/pkg/stackerr"
 )
 
-// counterLabels := []string{"function", "status", "info"}
-// r.counterVector = t.Metric.NewCounter("ports-http-repository", counterLabels)
-
-// timeLabels := []string{"function", "status"}
-// r.timeVector = t.Metric.NewHistogram("ports-http-repository", timeLabels)
-
-// type CounterVector struct {
-// 	vector *prometheus.CounterVec
-// }
-
-// func NewCounter(namespace string, subsystem string, name string, labels []string) *CounterVector {
-// 	vector := prometheus.NewCounterVec(prometheus.CounterOpts{
-// 		Help:      fmt.Sprintf("counter vector for %s", name),
-// 		Namespace: namespace,
-// 		Subsystem: subsystem,
-// 		Name:      name,
-// 	}, labels)
-
-// 	prometheus.MustRegister(vector)
-// 	return &CounterVector{vector}
-// }
-
-// func (vector *CounterVector) Increment(labels ...string) {
-// 	vector.vector.WithLabelValues(labels...).Inc()
-// }
-
 type Categories interface {
 }
 
@@ -59,13 +33,14 @@ type categories struct {
 	database *postgres.Postgres
 }
 
-func (c *categories) CreateCategory(ctx context.Context, categoryDAO *CategoryDAO) (categoryID int, err error) {
+func (c *categories) CreateOne(ctx context.Context, categoryDAO *CategoryDAO) (categoryID int, err error) {
 	defer func(start time.Time) {
-		c.database.Vectors.Counter.WithLabelValues("categories", "create_category", metrics.StatusSuccess).Inc()
-		// if err != nil {
-		// 	b.metric.IncrementError("define", "banners", err.Error())
-		// }
-		// b.metric.ObserveResponseTime(time.Since(start), "define", "banners")
+		if err != nil {
+			c.database.Vectors.Counter.IncrementVector("categories", "create_category", metrics.StatusFailure)
+			return
+		}
+		c.database.Vectors.Counter.IncrementVector("categories", "create_category", metrics.StatusSuccess)
+		c.database.Vectors.Histogram.ObserveResponseTime(start, "categories", "create_category")
 	}(time.Now())
 
 	query := `

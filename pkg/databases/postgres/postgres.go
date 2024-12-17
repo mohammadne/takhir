@@ -12,7 +12,6 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/mohammadne/takhir/internal"
 	"github.com/mohammadne/takhir/pkg/metrics"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 type Postgres struct {
@@ -23,7 +22,7 @@ type Postgres struct {
 
 type vectors struct {
 	Counter   metrics.Counter
-	Histogram *prometheus.HistogramVec
+	Histogram metrics.Histogram
 }
 
 const (
@@ -51,26 +50,18 @@ func Open(cfg *Config, migrations string) (*Postgres, error) {
 	}
 
 	var vectors vectors
-	{
-		name := "postgres"
-		labels := []string{""}
-		buckets := []float64{.005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5}
+	name := "postgres"
 
-		vectors.Counter, err = metrics.RegisterCounter(name, internal.Namespace, internal.Namespace, labels)
-		if err != nil {
-			return nil, fmt.Errorf("error while registering counter vector: %v", err)
-		}
+	counterLabels := []string{"table, function", "status"}
+	vectors.Counter, err = metrics.RegisterCounter(name, internal.Namespace, internal.Namespace, counterLabels)
+	if err != nil {
+		return nil, fmt.Errorf("error while registering counter vector: %v", err)
+	}
 
-		vectors.Histogram = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-			Help:      "histogram vector for postgres",
-			Namespace: internal.Namespace,
-			Subsystem: internal.System,
-			Name:      name,
-			Buckets:   buckets,
-		}, labels)
-		if err := prometheus.Register(vectors.Histogram); err != nil {
-			return nil, fmt.Errorf("error while registering histogram vector: %v", err)
-		}
+	histogramLabels := []string{"table, function"}
+	vectors.Histogram, err = metrics.RegisterHistogram(name, internal.Namespace, internal.Namespace, histogramLabels)
+	if err != nil {
+		return nil, fmt.Errorf("error while registering histogram vector: %v", err)
 	}
 
 	r := &Postgres{DB: database, migrations: migrations, Vectors: &vectors}
