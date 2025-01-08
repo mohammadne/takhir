@@ -39,7 +39,11 @@ func (m Migration) Command(ctx context.Context) *cobra.Command {
 
 func (m *Migration) initialize(args []string) {
 	m.config = config.Load(true)
-	m.logger = logger.NewZap(m.config.Logger)
+	var err error
+	m.logger, err = logger.New(m.config.Logger)
+	if err != nil {
+		panic(err)
+	}
 
 	if len(args) != 1 {
 		m.logger.Fatal("invalid arguments have been given", zap.Any("args", args))

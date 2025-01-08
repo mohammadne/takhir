@@ -44,7 +44,11 @@ func (s Server) Command(ctx context.Context) *cobra.Command {
 
 func (s *Server) initialize() {
 	s.config = config.Load(true)
-	s.logger = logger.NewZap(s.config.Logger)
+	var err error
+	s.logger, err = logger.New(s.config.Logger)
+	if err != nil {
+		panic(err)
+	}
 
 	postgres, err := postgres.Open(s.config.Postgres, "file://hacks/migrations")
 	if err != nil {
