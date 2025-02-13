@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"runtime"
 )
 
@@ -21,6 +20,7 @@ func BuildInfo() map[string]string {
 		`Go Version`:  runtime.Version(),
 		`Git Commit`:  GitCommit,
 		`Built At`:    BuildTime,
-		`OS/ARCH`:     fmt.Sprintf("OS/Arch:\t %s/%s\n", runtime.GOOS, runtime.GOARCH),
+		`OS`:          runtime.GOOS,
+		`Arch`:        runtime.GOARCH,
 	}
 }

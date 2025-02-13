@@ -3,17 +3,19 @@ package main
 import (
 	"context"
 	"flag"
-	"log/slog"
-	"os"
+	"log"
 	"os/signal"
 	"sync"
 	"syscall"
 
+	"github.com/mohammadne/takhir/cmd"
 	"github.com/mohammadne/takhir/internal/api/http"
 	"github.com/mohammadne/takhir/internal/config"
 	"github.com/mohammadne/takhir/internal/core"
 	"github.com/mohammadne/takhir/pkg/databases/postgres"
+	"github.com/mohammadne/takhir/pkg/databases/redis"
 	"github.com/mohammadne/takhir/pkg/observability/logger"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -22,41 +24,38 @@ func main() {
 	environmentRaw := flag.String("environment", "", "The environment (default: local)")
 	flag.Parse() // Parse the command-line flags
 
-	environment := core.ToEnvironment(*environmentRaw)
-
 	var cfg config.Config
 	var err error
 
-	switch environment {
+	switch core.ToEnvironment(*environmentRaw) {
 	case core.EnvironmentLocal:
 		cfg, err = config.LoadDefaults(true)
-		if err != nil {
-			panic(err)
-		}
 	default:
 		cfg, err = config.Load(true)
-		if err != nil {
-			panic(err)
-		}
+	}
+
+	if err != nil {
+		log.Fatalf("failed to load config: \n%v", err)
 	}
 
 	logger, err := logger.New(cfg.Logger)
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to initialize logger: \n%v", err)
 	}
+
+	logger.Info("BuildInfo", zap.Any("data", cmd.BuildInfo()))
 
 	postgres, err := postgres.Open(cfg.Postgres, core.Namespace, core.System)
 	if err != nil {
-		slog.Error(`error connecting to postgres database`, `Err`, err)
-		os.Exit(1)
+		logger.Fatal(`error connecting to postgres database`, zap.Error(err))
 	}
 	_ = postgres
 
-	// redis, err := redis.Open(cfg.Redis)
-	// if err != nil {
-	// 	slog.Error(`error connecting to redis database`, `Err`, err)
-	// 	os.Exit(1)
-	// }
+	redis, err := redis.Open(cfg.Redis)
+	if err != nil {
+		logger.Fatal(`error connecting to redis database`, zap.Error(err))
+	}
+	_ = redis
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -67,5 +66,5 @@ func main() {
 
 	<-ctx.Done()
 	wg.Wait()
-	slog.Warn("interruption signal recieved, gracefully shutdown the server")
+	logger.Warn("interruption signal recieved, gracefully shutdown the server")
 }
