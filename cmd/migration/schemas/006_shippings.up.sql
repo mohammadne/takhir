@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS shippings (
 	id SERIAL PRIMARY KEY,
-	order_id INTEGER UNIQUE NOT NULL, FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+	order_id INTEGER UNIQUE NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
 	carrier VARCHAR(100) NOT NULL,  -- Name of the carrier
 	tracking_code VARCHAR(100),  -- Tracking code provided by the carrier
 	shipped_at TIMESTAMP,  -- The date when the order was shipped
@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS shippings (
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE UNIQUE INDEX idx_unique_shippings_tracking_code ON shippings (tracking_code);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_shippings_tracking_code ON shippings (tracking_code);

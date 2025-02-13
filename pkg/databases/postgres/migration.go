@@ -61,6 +61,9 @@ func (p *Postgres) Migrate(directory string, files *embed.FS, direction MigrateD
 	}
 
 	sort.Slice(migrations, func(i, j int) bool {
+		if direction == MigrateDirectionDown {
+			return migrations[i].sort > migrations[j].sort
+		}
 		return migrations[i].sort < migrations[j].sort
 	})
 
