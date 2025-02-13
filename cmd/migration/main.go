@@ -31,14 +31,14 @@ func main() {
 
 	db, err := postgres.Open(cfg.Postgres, core.Namespace, core.System)
 	if err != nil {
-		slog.Error(`error connecting to mysql database`, `Err`, err)
+		slog.Error(`error connecting to postgres database`, `Err`, err)
 		os.Exit(1)
 	}
 
 	migrateDirection := postgres.MigrateDirection(strings.ToUpper(*direction))
 	err = db.Migrate("schemas", &files, migrateDirection)
 	if err != nil {
-		slog.Error(`error migrating mysql database`, `Err`, err)
+		slog.Error(`error migrating postgres database`, `Err`, err)
 		os.Exit(1)
 	}
 

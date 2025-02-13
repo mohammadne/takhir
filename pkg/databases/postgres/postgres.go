@@ -22,8 +22,9 @@ type vectors struct {
 }
 
 const (
-	driver      = "postgres"
-	pingTimeout = time.Second * 20
+	driver           = "postgres"
+	pingTimeout      = time.Second * 20
+	vectorNamePrefix = "postgres"
 )
 
 func Open(cfg *Config, namespace, subsystem string) (*Postgres, error) {
@@ -46,18 +47,20 @@ func Open(cfg *Config, namespace, subsystem string) (*Postgres, error) {
 	}
 
 	var vectors vectors
-	name := "postgres"
+	{
+		counterName := vectorNamePrefix + "_counter"
+		counterLabels := []string{"table", "method", "status"}
+		vectors.Counter, err = metrics.RegisterCounter(counterName, namespace, subsystem, counterLabels)
+		if err != nil {
+			return nil, fmt.Errorf("error while registering counter vector: %v", err)
+		}
 
-	counterLabels := []string{"table, function", "status"}
-	vectors.Counter, err = metrics.RegisterCounter(name, namespace, subsystem, counterLabels)
-	if err != nil {
-		return nil, fmt.Errorf("error while registering counter vector: %v", err)
-	}
-
-	histogramLabels := []string{"table, function"}
-	vectors.Histogram, err = metrics.RegisterHistogram(name, namespace, subsystem, histogramLabels)
-	if err != nil {
-		return nil, fmt.Errorf("error while registering histogram vector: %v", err)
+		histogramName := vectorNamePrefix + "_histogram"
+		histogramLabels := []string{"table", "method"}
+		vectors.Histogram, err = metrics.RegisterHistogram(histogramName, namespace, subsystem, histogramLabels)
+		if err != nil {
+			return nil, fmt.Errorf("error while registering histogram vector: %v", err)
+		}
 	}
 
 	r := &Postgres{DB: database, Vectors: &vectors}

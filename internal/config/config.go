@@ -50,7 +50,6 @@ func LoadDefaults(print bool) (config Config, err error) {
 		}
 
 		key := strings.ReplaceAll(splits[0], seperator+seperator, seperator)
-		fmt.Println(key)
 		err = os.Setenv(key, splits[1])
 		if err != nil {
 			return Config{}, fmt.Errorf("error set environment %s: %v", key, err)
