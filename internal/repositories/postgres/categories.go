@@ -8,8 +8,8 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/mohammadne/takhir/pkg/databases/postgres"
-	"github.com/mohammadne/takhir/pkg/metrics"
-	"github.com/mohammadne/takhir/pkg/stackerr"
+	"github.com/mohammadne/takhir/pkg/observability/metrics"
+	// "github.com/mohammadne/takhir/pkg/stackerr"
 )
 
 type Categories interface {
@@ -56,7 +56,7 @@ func (c *categories) CreateOne(ctx context.Context, categoryDAO *CategoryDAO) (c
 		}),
 	)
 	if err != nil {
-		return 0, stackerr.Wrap(err, "error creating category in database")
+		// return 0, stackerr.Wrap(err, "error creating category in database")
 	}
 
 	return categoryID, nil

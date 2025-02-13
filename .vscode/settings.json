@@ -1,9 +1,7 @@
 {
-    "go.testEnvVars": {
-        "PING": "PONG"
-    },
     "go.testTimeout": "30s",
     "go.testFlags": [
-        "-v"
+        "-v",
+        "-count=1"
     ]
 }

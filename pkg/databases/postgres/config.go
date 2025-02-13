@@ -1,9 +1,9 @@
 package postgres
 
 type Config struct {
-	Host     string `koanf:"host"`
-	Port     int    `koanf:"port"`
-	User     string `koanf:"user"`
-	Password string `koanf:"password"`
-	Database string `koanf:"database"`
+	Host     string `required:"true"`
+	Port     int    `required:"true"`
+	User     string `required:"true"`
+	Password string `required:"true"`
+	Database string `required:"true"`
 }
