@@ -10,9 +10,9 @@ import (
 	"syscall"
 
 	"github.com/mohammadne/takhir/cmd"
+	"github.com/mohammadne/takhir/internal/api/http"
 	"github.com/mohammadne/takhir/internal/config"
 	"github.com/mohammadne/takhir/internal/core"
-	"github.com/mohammadne/takhir/internal/transport/http"
 	"github.com/mohammadne/takhir/pkg/databases/postgres"
 )
 

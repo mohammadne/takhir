@@ -6,11 +6,11 @@ import (
 )
 
 func NewItems(router fiber.Router, logger *zap.Logger) {
-	items := &items{logger: logger}
+	handler := &items{logger: logger}
 
-	group := router.Group("items")
-	group.Get("/", items.list)
-	// group.Get("/:id", server.getItem)
+	items := router.Group("items")
+	items.Get("/", handler.list)
+	// items.Get("/:id", server.getItem)
 }
 
 type items struct {

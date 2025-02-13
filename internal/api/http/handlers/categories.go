@@ -6,10 +6,10 @@ import (
 )
 
 func NewCategories(router fiber.Router, logger *zap.Logger) {
-	categories := &categories{logger: logger}
+	handler := &categories{logger: logger}
 
-	group := router.Group("categories")
-	group.Get("/", categories.list)
+	categories := router.Group("categories")
+	categories.Get("/", handler.list)
 }
 
 type categories struct {

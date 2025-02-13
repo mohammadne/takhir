@@ -8,10 +8,11 @@ import (
 )
 
 func NewHealthz(router fiber.Router, logger *zap.Logger) {
-	healthz := &healthz{logger: logger}
+	handler := &healthz{logger: logger}
 
-	router.Get("/liveness", healthz.liveness)
-	router.Get("/readiness", healthz.readiness)
+	healthz := router.Group("healthz")
+	healthz.Get("/liveness", handler.liveness)
+	healthz.Get("/readiness", handler.readiness)
 }
 
 type healthz struct {
