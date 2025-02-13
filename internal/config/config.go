@@ -11,12 +11,14 @@ import (
 
 	"github.com/mohammadne/takhir/internal/core"
 	"github.com/mohammadne/takhir/pkg/databases/postgres"
+	"github.com/mohammadne/takhir/pkg/databases/redis"
 	"github.com/mohammadne/takhir/pkg/observability/logger"
 )
 
 type Config struct {
-	Logger   *logger.Config   `koanf:"logger"`
-	Postgres *postgres.Config `koanf:"postgres"`
+	Logger   *logger.Config   `required:"true"`
+	Postgres *postgres.Config `required:"true"`
+	Redis    *redis.Config    `required:"true"`
 }
 
 func Load(print bool) (config Config, err error) {

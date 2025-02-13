@@ -9,11 +9,11 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/mohammadne/takhir/cmd"
 	"github.com/mohammadne/takhir/internal/api/http"
 	"github.com/mohammadne/takhir/internal/config"
 	"github.com/mohammadne/takhir/internal/core"
 	"github.com/mohammadne/takhir/pkg/databases/postgres"
+	"github.com/mohammadne/takhir/pkg/observability/logger"
 )
 
 func main() {
@@ -23,9 +23,6 @@ func main() {
 	flag.Parse() // Parse the command-line flags
 
 	environment := core.ToEnvironment(*environmentRaw)
-
-	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{AddSource: true, Level: slog.LevelInfo})))
-	cmd.BuildInfo()
 
 	var cfg config.Config
 	var err error
@@ -41,6 +38,11 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+	}
+
+	logger, err := logger.New(cfg.Logger)
+	if err != nil {
+		panic(err)
 	}
 
 	postgres, err := postgres.Open(cfg.Postgres, core.Namespace, core.System)
@@ -61,7 +63,7 @@ func main() {
 	var wg sync.WaitGroup
 
 	wg.Add(1)
-	go http.New(nil).Serve(ctx, &wg, *monitorPort, *requestPort)
+	go http.New(logger).Serve(ctx, &wg, *monitorPort, *requestPort)
 
 	<-ctx.Done()
 	wg.Wait()
