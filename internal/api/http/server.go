@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -24,7 +23,7 @@ type Server struct {
 
 func New(log *zap.Logger) *Server {
 	server := &Server{logger: log}
-	fiberConfig := fiber.Config{JSONEncoder: json.Marshal, JSONDecoder: json.Unmarshal}
+	fiberConfig := fiber.Config{DisableStartupMessage: true}
 
 	// ----------------------------------------- Monitor Endpoints
 
@@ -54,14 +53,16 @@ func (server *Server) Serve(ctx context.Context, wg *sync.WaitGroup, monitor, re
 		{request, server.requestApp, "request server"},
 	}
 
-	for _, runnable := range runnables {
+	for _, r := range runnables {
 		go func() {
-			address := fmt.Sprintf("0.0.0.0:%d", runnable.port)
-			fields := []zapcore.Field{zap.String("address", address),
-				zap.String("description", runnable.description)}
+			address := fmt.Sprintf("0.0.0.0:%d", r.port)
+			fields := []zapcore.Field{
+				zap.String("address", address),
+				zap.String("description", r.description),
+			}
 
 			server.logger.Info("starting server", fields...)
-			err := runnable.app.Listen(address)
+			err := r.app.Listen(address)
 			fields = append(fields, zap.Error(err))
 			server.logger.Fatal("error resolving server", fields...)
 		}()
@@ -71,8 +72,8 @@ func (server *Server) Serve(ctx context.Context, wg *sync.WaitGroup, monitor, re
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	for _, runnable := range runnables {
-		if err := runnable.app.ShutdownWithContext(shutdownCtx); err != nil {
+	for _, r := range runnables {
+		if err := r.app.ShutdownWithContext(shutdownCtx); err != nil {
 			server.logger.Error("error shutdown http server", zap.Error(err))
 		}
 	}

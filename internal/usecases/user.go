@@ -5,11 +5,20 @@ import (
 	"fmt"
 
 	"github.com/mohammadne/takhir/internal/entities"
-	"github.com/mohammadne/takhir/internal/repositories/postgres"
+	"github.com/mohammadne/takhir/internal/repositories/storage"
+	"go.uber.org/zap"
 )
 
+type Carts interface {
+	RegisterUserByPhone(ctx context.Context, phone entities.Phone) error
+}
+
+func NewUser(logger *zap.Logger, userStorage storage.User) Carts {
+	return &user{userStorage: userStorage}
+}
+
 type user struct {
-	postgre postgres.User
+	userStorage storage.User
 }
 
 func (u *user) RegisterUserByPhone(ctx context.Context, phone entities.Phone) error {
