@@ -2,62 +2,65 @@ package storage
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"go.uber.org/zap"
 
+	"github.com/mohammadne/takhir/internal/entities"
 	"github.com/mohammadne/takhir/pkg/databases/postgres"
 	"github.com/mohammadne/takhir/pkg/observability/metrics"
-	// "github.com/mohammadne/takhir/pkg/stackerr"
 )
 
 type Categories interface {
+	AllCategories(ctx context.Context) ([]Category, entities.Failure)
 }
 
-type CategoryDAO struct {
-	ID          int
-	Name        string
-	Description string
+type Category struct {
+	ID          int       `db:"id"`
+	Name        string    `db:"name"`
+	Description string    `db:"description"`
+	CreatedAt   time.Time `db:"created_at"`
 }
 
 func NewCategories(lg *zap.Logger, postgres *postgres.Postgres) Categories {
 	return &categories{
 		logger:   lg,
-		database: postgres,
+		postgres: postgres,
 	}
 }
 
 type categories struct {
 	logger   *zap.Logger
-	database *postgres.Postgres
+	postgres *postgres.Postgres
 }
 
-func (c *categories) CreateOne(ctx context.Context, categoryDAO *CategoryDAO) (categoryID int, err error) {
+var (
+	FailureCategoriesNotFound       = entities.NewFailure("failure_categories_not_found")
+	FailureRetrievingCategoriesRows = entities.NewFailure("failure_retrieving_categories_rows")
+	FailureScanningCategoryRow      = entities.NewFailure("failure_retrieving_categories_rows")
+)
+
+func (c *categories) AllCategories(ctx context.Context) (result []Category, f entities.Failure) {
 	defer func(start time.Time) {
-		if err != nil {
-			c.database.Vectors.Counter.IncrementVector("categories", "create_category", metrics.StatusFailure)
+		if f != nil {
+			c.postgres.Vectors.Counter.IncrementVector("categories", "all_categories", metrics.StatusFailure)
 			return
 		}
-		c.database.Vectors.Counter.IncrementVector("categories", "create_category", metrics.StatusSuccess)
-		c.database.Vectors.Histogram.ObserveResponseTime(start, "categories", "create_category")
+		c.postgres.Vectors.Counter.IncrementVector("categories", "all_categories", metrics.StatusSuccess)
+		c.postgres.Vectors.Histogram.ObserveResponseTime(start, "categories", "all_categories")
 	}(time.Now())
 
 	query := `
-	INSERT INTO categories (name, description)
-	VALUES (:name, :description)
-	RETURNING id INTO :id`
+	SELECT id, name, description, created_at
+	FROM categories`
 
-	_, err = c.database.ExecContext(ctx, query,
-		sql.Named("name", categoryDAO.Name),
-		sql.Named("description", categoryDAO.Description),
-		sql.Named("id", sql.Out{
-			Dest: &categoryID,
-		}),
-	)
+	err := c.postgres.SelectContext(ctx, &result, query)
 	if err != nil {
-		// return 0, stackerr.Wrap(err, "error creating category in database")
+		c.logger.Error(FailureRetrievingCategoriesRows.Error(), zap.Error(err))
+		return nil, FailureRetrievingCategoriesRows
+	} else if len(result) == 0 {
+		return nil, FailureCategoriesNotFound
 	}
 
-	return categoryID, nil
+	return result, nil
 }

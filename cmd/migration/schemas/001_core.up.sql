@@ -2,7 +2,8 @@
 CREATE TABLE IF NOT EXISTS categories (
 	id SERIAL PRIMARY KEY,
 	name VARCHAR(255) NOT NULL,
-	description TEXT
+	description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_unique_name ON categories (name);
