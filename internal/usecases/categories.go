@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/mohammadne/takhir/internal/entities"
-	"github.com/mohammadne/takhir/internal/repositories/cache"
-	"github.com/mohammadne/takhir/internal/repositories/storage"
+	"github.com/mohammadne/zanbil/internal/entities"
+	"github.com/mohammadne/zanbil/internal/repositories/cache"
+	"github.com/mohammadne/zanbil/internal/repositories/storage"
 	"go.uber.org/zap"
 )
 

@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/mohammadne/takhir/pkg/databases/postgres"
+	"github.com/mohammadne/zanbil/pkg/databases/postgres"
 	"go.uber.org/zap"
 )
 

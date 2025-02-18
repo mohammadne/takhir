@@ -25,8 +25,8 @@ services:
     image: postgres:16.4-alpine3.20
     environment:
       POSTGRES_ROOT_PASSWORD: 9xz3jrd8wf
-      POSTGRES_DATABASE: takhir_db
-      POSTGRES_USER: takhir_user
+      POSTGRES_DATABASE: zanbil_db
+      POSTGRES_USER: zanbil_user
       POSTGRES_PASSWORD: 9xz3jrd8wf
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -40,27 +40,27 @@ services:
     networks:
       - internal
 
-  takhir:
-    image: ghcr.io/mohammadne/takhir:v0.0.1
+  zanbil:
+    image: ghcr.io/mohammadne/zanbil:v0.0.1
     restart: unless-stopped
     command:
       - --environment=prod
     environment:
-      TAKHIR_POSTGRES_HOST: postgres
-      TAKHIR_POSTGRES_PORT: 5432
-      TAKHIR_POSTGRES_USER: takhir_user
-      TAKHIR_POSTGRES_PASSWORD: 9xz3jrd8wf
-      TAKHIR_POSTGRES_DATABASE: takhir_db
-      TAKHIR_REDIS_ADDRESS: redis:6379
-      TAKHIR_REDIS_USERNAME: 
-      TAKHIR_REDIS_PASSWORD: 
-      TAKHIR_REDIS_DB: 1
+      ZANBIL_POSTGRES_HOST: postgres
+      ZANBIL_POSTGRES_PORT: 5432
+      ZANBIL_POSTGRES_USER: zanbil_user
+      ZANBIL_POSTGRES_PASSWORD: 9xz3jrd8wf
+      ZANBIL_POSTGRES_DATABASE: zanbil_db
+      ZANBIL_REDIS_ADDRESS: redis:6379
+      ZANBIL_REDIS_USERNAME: 
+      ZANBIL_REDIS_PASSWORD: 
+      ZANBIL_REDIS_DB: 1
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.takhir.rule=Host(`takhir.mohammadne.ir`)"
-      - "traefik.http.routers.takhir.entrypoints=websecure"
-      - "traefik.http.routers.takhir.tls.certresolver=myresolver"
-      - "traefik.http.services.takhir.loadbalancer.server.port=8088"
+      - "traefik.http.routers.zanbil.rule=Host(`zanbil.mohammadne.ir`)"
+      - "traefik.http.routers.zanbil.entrypoints=websecure"
+      - "traefik.http.routers.zanbil.tls.certresolver=myresolver"
+      - "traefik.http.services.zanbil.loadbalancer.server.port=8088"
     depends_on:
       - postgres
       - redis

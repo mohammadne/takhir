@@ -1,8 +1,10 @@
-# Takhir
+# Zanbil
 
-> Takhir is a persian name means delay
+> Zanbil is a persian name means basket
 
-Here we mimic a vendoring platform which has an ordering system and in this service we want to handle and investigate delayed items in the delivery system to process them separately
+Zanbil is a lightweight and efficient Go program designed to demonstrate how to write, test, build, and release Go applications across multiple platforms, including Docker (Podman) and Kubernetes which follows best practices for error handling, internationalization and clean architecture.
+
+Whether you’re building a small project or an enterprise-level application, Zanbil provides valuable insights into structuring and developing Go programs with scalability and maintainability in mind.
 
 ## Setup
 

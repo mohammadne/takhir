@@ -4,8 +4,8 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: takhir_db
-      POSTGRES_USER: takhir_user
+      POSTGRES_DB: zanbil_db
+      POSTGRES_USER: zanbil_user
       POSTGRES_PASSWORD: 9xz3jrd8wf
     volumes:
       - postgres_data:/var/lib/postgresql/data

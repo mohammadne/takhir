@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mohammadne/takhir/internal/entities"
+	"github.com/mohammadne/zanbil/internal/entities"
 	"go.uber.org/zap"
 )
 

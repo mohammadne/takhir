@@ -12,9 +12,9 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/mohammadne/takhir/internal/api/http/handlers"
-	"github.com/mohammadne/takhir/internal/api/http/i18n"
-	"github.com/mohammadne/takhir/internal/usecases"
+	"github.com/mohammadne/zanbil/internal/api/http/handlers"
+	"github.com/mohammadne/zanbil/internal/api/http/i18n"
+	"github.com/mohammadne/zanbil/internal/usecases"
 )
 
 type Server struct {

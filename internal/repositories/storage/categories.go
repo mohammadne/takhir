@@ -7,8 +7,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mohammadne/takhir/pkg/databases/postgres"
-	"github.com/mohammadne/takhir/pkg/observability/metrics"
+	"github.com/mohammadne/zanbil/pkg/databases/postgres"
+	"github.com/mohammadne/zanbil/pkg/observability/metrics"
 )
 
 type Categories interface {

@@ -1,6 +1,6 @@
-module github.com/mohammadne/takhir
+module github.com/mohammadne/zanbil
 
-go 1.23
+go 1.23.5
 
 require (
 	github.com/TheZeroSlave/zapsentry v1.23.0

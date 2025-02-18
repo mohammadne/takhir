@@ -3,8 +3,8 @@ package storage
 import (
 	"context"
 
-	"github.com/mohammadne/takhir/internal/entities"
-	"github.com/mohammadne/takhir/pkg/databases/postgres"
+	"github.com/mohammadne/zanbil/internal/entities"
+	"github.com/mohammadne/zanbil/pkg/databases/postgres"
 	"go.uber.org/zap"
 )
 

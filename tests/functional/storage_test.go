@@ -9,11 +9,11 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/mohammadne/takhir/internal/config"
-	"github.com/mohammadne/takhir/internal/core"
-	"github.com/mohammadne/takhir/internal/repositories/storage"
-	"github.com/mohammadne/takhir/pkg/databases/postgres"
-	"github.com/mohammadne/takhir/pkg/observability/logger"
+	"github.com/mohammadne/zanbil/internal/config"
+	"github.com/mohammadne/zanbil/internal/core"
+	"github.com/mohammadne/zanbil/internal/repositories/storage"
+	"github.com/mohammadne/zanbil/pkg/databases/postgres"
+	"github.com/mohammadne/zanbil/pkg/observability/logger"
 )
 
 type StorageTestSuite struct {

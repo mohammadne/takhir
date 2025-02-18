@@ -3,8 +3,8 @@ package i18n_test
 import (
 	"testing"
 
-	"github.com/mohammadne/takhir/internal/api/http/i18n"
-	"github.com/mohammadne/takhir/internal/entities"
+	"github.com/mohammadne/zanbil/internal/api/http/i18n"
+	"github.com/mohammadne/zanbil/internal/entities"
 	"go.uber.org/zap"
 )
 

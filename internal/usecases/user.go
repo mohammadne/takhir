@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mohammadne/takhir/internal/entities"
-	"github.com/mohammadne/takhir/internal/repositories/storage"
+	"github.com/mohammadne/zanbil/internal/entities"
+	"github.com/mohammadne/zanbil/internal/repositories/storage"
 	"go.uber.org/zap"
 )
 

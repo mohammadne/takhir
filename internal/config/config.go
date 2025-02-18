@@ -9,10 +9,10 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 
-	"github.com/mohammadne/takhir/internal/core"
-	"github.com/mohammadne/takhir/pkg/databases/postgres"
-	"github.com/mohammadne/takhir/pkg/databases/redis"
-	"github.com/mohammadne/takhir/pkg/observability/logger"
+	"github.com/mohammadne/zanbil/internal/core"
+	"github.com/mohammadne/zanbil/pkg/databases/postgres"
+	"github.com/mohammadne/zanbil/pkg/databases/redis"
+	"github.com/mohammadne/zanbil/pkg/observability/logger"
 )
 
 type Config struct {

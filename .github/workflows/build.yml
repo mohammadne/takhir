@@ -27,5 +27,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/takhir:${{ github.ref_name }}
-            ghcr.io/${{ github.repository_owner }}/takhir:latest
+            ghcr.io/${{ github.repository_owner }}/zanbil:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/zanbil:latest

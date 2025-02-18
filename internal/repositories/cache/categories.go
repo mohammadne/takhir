@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/mohammadne/takhir/internal/entities"
-	"github.com/mohammadne/takhir/pkg/databases/redis"
+	"github.com/mohammadne/zanbil/internal/entities"
+	"github.com/mohammadne/zanbil/pkg/databases/redis"
 	"go.uber.org/zap"
 )
 

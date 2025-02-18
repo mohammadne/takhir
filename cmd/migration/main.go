@@ -6,9 +6,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/mohammadne/takhir/internal/config"
-	"github.com/mohammadne/takhir/internal/core"
-	"github.com/mohammadne/takhir/pkg/databases/postgres"
+	"github.com/mohammadne/zanbil/internal/config"
+	"github.com/mohammadne/zanbil/internal/core"
+	"github.com/mohammadne/zanbil/pkg/databases/postgres"
 )
 
 //go:embed schemas/*.sql

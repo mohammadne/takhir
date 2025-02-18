@@ -4,9 +4,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 
-	"github.com/mohammadne/takhir/internal/api/http/i18n"
-	"github.com/mohammadne/takhir/internal/api/http/models"
-	"github.com/mohammadne/takhir/internal/usecases"
+	"github.com/mohammadne/zanbil/internal/api/http/i18n"
+	"github.com/mohammadne/zanbil/internal/api/http/models"
+	"github.com/mohammadne/zanbil/internal/usecases"
 )
 
 func NewCategories(router fiber.Router, logger *zap.Logger, i18n i18n.I18N,
