@@ -4,8 +4,8 @@ on:
   - push
 
 jobs:
-  test:
-    name: test
+  unit-test:
+    name: Unit Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,9 +14,38 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
-      - run: make codecov-test
+      - run: make unit-test
       - uses: codecov/codecov-action@v5
         with:
           files: coverage.out
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: mohammadne/zanbil
+
+  functional-test:
+    name: Functional Test
+    runs-on: ubuntu-latest
+    needs: unit-test
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: testdb
+        options: --health-cmd="pg_isready -U user -d testdb" --health-timeout=30s --health-retries=5 --health-start-period=10s
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-timeout=30s --health-retries=5 --health-start-period=10s
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+      - run: make functional-test
