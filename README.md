@@ -1,6 +1,6 @@
 # Zanbil
 
-> Zanbil is a persian name means basket
+> Zanbil is a persian name means basket 🧺
 
 Zanbil is a lightweight and efficient Go program designed to demonstrate how to write, test, build, and release Go applications across multiple platforms, including Docker (Podman) and Kubernetes which follows best practices for error handling, internationalization and clean architecture.
 

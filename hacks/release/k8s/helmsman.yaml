@@ -1,0 +1,33 @@
+settings:
+  kubeContext: kind-zanbil
+  maxHistory: 10
+  timeout: 6000
+
+namespaces:
+  ambassador:
+    labels:
+      managed-by: "helmsman"
+  operators:
+    labels:
+      managed-by: helmsman
+
+helmRepos:
+  datawire: "https://app.getambassador.io"
+
+apps:
+  traffic-manager:
+    name: traffic-manager
+    namespace: ambassador
+    priority: -9000
+    chart: datawire/telepresence
+    enabled: true
+    version: 2.15.1
+
+  zanbil:
+    name: zanbil
+    namespace: operators
+    chart: "./zanbil"
+    enabled: true
+    version: "0.1.0"
+    secretsFiles:
+      - ./zanbil/secrets.yaml
