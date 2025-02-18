@@ -2,17 +2,17 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"go.uber.org/zap"
 
-	"github.com/mohammadne/takhir/internal/entities"
 	"github.com/mohammadne/takhir/pkg/databases/postgres"
 	"github.com/mohammadne/takhir/pkg/observability/metrics"
 )
 
 type Categories interface {
-	AllCategories(ctx context.Context) ([]Category, entities.Failure)
+	AllCategories(ctx context.Context) ([]Category, error)
 }
 
 type Category struct {
@@ -35,13 +35,13 @@ type categories struct {
 }
 
 var (
-	FailureCategoriesNotFound       = entities.NewFailure("failure_categories_not_found")
-	FailureRetrievingCategoriesRows = entities.NewFailure("failure_retrieving_categories_rows")
+	ErrCategoriesNotFound       = errors.New("err_categories_not_found")
+	ErrRetrievingCategoriesRows = errors.New("err_retrieving_categories_rows")
 )
 
-func (c *categories) AllCategories(ctx context.Context) (result []Category, f entities.Failure) {
+func (c *categories) AllCategories(ctx context.Context) (result []Category, err error) {
 	defer func(start time.Time) {
-		if f != nil {
+		if err != nil {
 			c.postgres.Vectors.Counter.IncrementVector("categories", "all_categories", metrics.StatusFailure)
 			return
 		}
@@ -53,12 +53,11 @@ func (c *categories) AllCategories(ctx context.Context) (result []Category, f en
 	SELECT id, name, description, created_at
 	FROM categories`
 
-	err := c.postgres.SelectContext(ctx, &result, query)
-	if err != nil {
-		c.logger.Error(FailureRetrievingCategoriesRows.Error(), zap.Error(err))
-		return nil, FailureRetrievingCategoriesRows
+	if err = c.postgres.SelectContext(ctx, &result, query); err != nil {
+		c.logger.Error(ErrRetrievingCategoriesRows.Error(), zap.Error(err))
+		return nil, ErrRetrievingCategoriesRows
 	} else if len(result) == 0 {
-		return nil, FailureCategoriesNotFound
+		return nil, ErrCategoriesNotFound
 	}
 
 	return result, nil

@@ -12,8 +12,8 @@ import (
 )
 
 type Categories interface {
-	AllCategories(ctx context.Context) ([]entities.Category, entities.Failure)
-	SetAllCategories(ctx context.Context, categories []entities.Category) entities.Failure
+	AllCategories(ctx context.Context) ([]entities.Category, error)
+	SetAllCategories(ctx context.Context, categories []entities.Category) error
 }
 
 func NewCategories(logger *zap.Logger, redis *redis.Redis) Categories {
@@ -28,25 +28,25 @@ type categories struct {
 const categoriesKey = "categories:all" // Key that stores all categories
 
 var (
-	FailureCategoriesNotFound            = entities.NewFailure("no_categories_have_been_found")
-	FailureRetrievingCategoriesFromRedis = entities.NewFailure("failure_retrieving_categories_from_redis")
-	FailureUnmarshallingCachedCategories = entities.NewFailure("failure_unmarshalling_cached_categories")
+	ErrCategoriesNotFound            = errors.New("err_categories_not_found")
+	ErrRetrievingCategoriesFromRedis = errors.New("err_retrieving_categories_from_redis")
+	ErrUnmarshallingCachedCategories = errors.New("err_unmarshalling_cached_categories")
 )
 
-func (c *categories) AllCategories(ctx context.Context) ([]entities.Category, entities.Failure) {
+func (c *categories) AllCategories(ctx context.Context) ([]entities.Category, error) {
 	cachedCategories, err := c.redis.Get(ctx, categoriesKey).Result()
 	if errors.Is(err, redis.Nil) || len(cachedCategories) == 0 {
-		return nil, FailureCategoriesNotFound
+		return nil, ErrCategoriesNotFound
 	} else if err != nil {
-		c.logger.Error(FailureRetrievingCategoriesFromRedis.Error(), zap.Error(err))
-		return nil, FailureRetrievingCategoriesFromRedis
+		c.logger.Error(ErrRetrievingCategoriesFromRedis.Error(), zap.Error(err))
+		return nil, ErrRetrievingCategoriesFromRedis
 	}
 
 	categories := make([]entities.Category, 0, len(cachedCategories))
 	err = json.Unmarshal([]byte(cachedCategories), categories)
 	if err != nil {
-		c.logger.Error(FailureUnmarshallingCachedCategories.Error(), zap.Error(err))
-		return nil, FailureUnmarshallingCachedCategories
+		c.logger.Error(ErrUnmarshallingCachedCategories.Error(), zap.Error(err))
+		return nil, ErrUnmarshallingCachedCategories
 	}
 
 	return categories, nil
@@ -57,24 +57,24 @@ const (
 )
 
 var (
-	FailureMarshallingCategories  = entities.NewFailure("failure_marshalling_categories")
-	FailureSetCategoriesIntoRedis = entities.NewFailure("failure_set_categories_into_redis")
+	ErrMarshallingCategories  = errors.New("err_marshalling_categories")
+	ErrSetCategoriesIntoRedis = errors.New("err_set_categories_into_redis")
 )
 
-func (c *categories) SetAllCategories(ctx context.Context, categories []entities.Category) entities.Failure {
+func (c *categories) SetAllCategories(ctx context.Context, categories []entities.Category) error {
 	ctx, cf := context.WithTimeout(ctx, SetAllCategoriesTimeout)
 	defer cf()
 
 	marshaledCategories, err := json.Marshal(categories)
 	if err != nil {
-		c.logger.Error(FailureMarshallingCategories.Error(), zap.Any("categories", categories), zap.Error(err))
-		return FailureMarshallingCategories
+		c.logger.Error(ErrMarshallingCategories.Error(), zap.Any("categories", categories), zap.Error(err))
+		return ErrMarshallingCategories
 	}
 
 	err = c.redis.Set(ctx, categoriesKey, marshaledCategories, time.Hour).Err()
 	if err != nil {
-		c.logger.Error(FailureSetCategoriesIntoRedis.Error(), zap.Error(err))
-		return FailureSetCategoriesIntoRedis
+		c.logger.Error(ErrSetCategoriesIntoRedis.Error(), zap.Error(err))
+		return ErrSetCategoriesIntoRedis
 	}
 
 	return nil

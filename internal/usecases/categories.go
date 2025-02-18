@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 
 	"github.com/mohammadne/takhir/internal/entities"
 	"github.com/mohammadne/takhir/internal/repositories/cache"
@@ -10,7 +11,7 @@ import (
 )
 
 type Categories interface {
-	AllCategories(ctx context.Context) ([]entities.Category, entities.Failure)
+	AllCategories(ctx context.Context) ([]entities.Category, error)
 }
 
 func NewCategories(logger *zap.Logger,
@@ -35,10 +36,10 @@ type categories struct {
 }
 
 var (
-	FailureRetrievingCategories = entities.NewFailure("failure_retrieving_categories")
+	ErrRetrievingCategories = errors.New("err_retrieving_categories")
 )
 
-func (c *categories) AllCategories(ctx context.Context) ([]entities.Category, entities.Failure) {
+func (c *categories) AllCategories(ctx context.Context) ([]entities.Category, error) {
 	categories, failure := c.categoriesCache.AllCategories(ctx)
 	if failure == nil {
 		return categories, nil
@@ -46,8 +47,8 @@ func (c *categories) AllCategories(ctx context.Context) ([]entities.Category, en
 
 	storageCategories, failure := c.categoriesStorage.AllCategories(ctx)
 	if failure != nil {
-		c.logger.Error(FailureRetrievingCategories.Error(), zap.Error(failure))
-		return nil, FailureRetrievingCategories
+		c.logger.Error(ErrRetrievingCategories.Error(), zap.Error(failure))
+		return nil, ErrRetrievingCategories
 	}
 
 	categories = make([]entities.Category, 0, len(storageCategories))

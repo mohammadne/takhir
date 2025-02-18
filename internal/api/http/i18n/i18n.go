@@ -6,30 +6,31 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/mohammadne/takhir/internal/entities"
 	"go.uber.org/zap"
 )
 
-//go:embed locales/*.json
-var locales embed.FS
+//go:embed languages/*.json
+var languages embed.FS
 
 type I18N interface {
-	Translate(message, locale string) string
+	Translate(key string, language entities.Language) string
 }
 
 type i18n struct {
 	logger   *zap.Logger
-	messages map[string]map[string]any
+	messages map[entities.Language]map[string]any
 }
 
 func New(logger *zap.Logger) (I18N, error) {
 	i := &i18n{
 		logger:   logger,
-		messages: make(map[string]map[string]any),
+		messages: make(map[entities.Language]map[string]any),
 	}
 
-	files, err := locales.ReadDir("locales")
+	files, err := languages.ReadDir("languages")
 	if err != nil {
-		return nil, fmt.Errorf("error reading locales directory, %v", err)
+		return nil, fmt.Errorf("error reading languages directory, %v", err)
 	}
 
 	for _, file := range files {
@@ -38,25 +39,30 @@ func New(logger *zap.Logger) (I18N, error) {
 			continue
 		}
 
-		locale := name[:len(name)-5]
-		data, err := locales.ReadFile("locales/" + name)
+		languageRaw := name[:len(name)-5]
+		language := entities.ToLanguage(languageRaw)
+		if languageRaw != string(language) {
+			return nil, fmt.Errorf("invalid file language %s, %v", name, err)
+		}
+
+		data, err := languages.ReadFile("languages/" + name)
 		if err != nil {
-			return nil, fmt.Errorf("error reading locale file %s, %v", name, err)
+			return nil, fmt.Errorf("error reading language file %s, %v", name, err)
 		}
 
 		var messages map[string]any
 		if err := json.Unmarshal(data, &messages); err != nil {
-			return nil, fmt.Errorf("error parsing locale file %s, %v", name, err)
+			return nil, fmt.Errorf("error parsing language file %s, %v", name, err)
 		}
 
-		i.messages[locale] = messages
+		i.messages[language] = messages
 	}
 
 	return i, nil
 }
 
-func (i *i18n) Translate(key, locale string) string {
-	if translations, exists := i.messages[locale]; exists {
+func (i *i18n) Translate(key string, language entities.Language) string {
+	if translations, exists := i.messages[language]; exists {
 		keyParts := strings.Split(key, ".")
 		var current any = translations
 
@@ -88,7 +94,7 @@ func (i *i18n) Translate(key, locale string) string {
 		return translateFromKey(key)
 	}
 
-	i.logger.Error("local not found", zap.String("locale", locale))
+	i.logger.Error("local not found", zap.String("locale", string(language)))
 	return translateFromKey(key)
 }
 
