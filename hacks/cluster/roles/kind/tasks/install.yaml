@@ -1,0 +1,29 @@
+---
+- name: Check if kind already installed into {{ user_bin_directory }}
+  stat:
+    path: "{{ user_bin_directory }}/kind"
+  register: kind_status
+
+- name: Check installed kind version
+  shell: "{{ user_bin_directory }}/kind --version | awk -F ' ' '{print \"v\"$3}'"
+  changed_when: false
+  register: kind_installed_version
+  when: kind_status.stat.exists
+
+- name: Installation will be skipped
+  set_fact:
+    skip_installation: "{{ kind_status.stat.exists and kind_version == kind_installed_version.stdout }}"
+
+- name: Remove old kind binary
+  file:
+    path: "{{ user_bin_directory }}/kind"
+    state: absent
+  when: not skip_installation
+
+- name: Download kind binary
+  get_url:
+    url: "https://kind.sigs.k8s.io/dl/{{ kind_version }}/kind-linux-amd64"
+    dest: "{{ user_bin_directory }}/kind"
+    mode: 0755
+    force: true
+  when: not skip_installation

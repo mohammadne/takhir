@@ -1,0 +1,11 @@
+- hosts: server
+  become: yes
+  gather_facts: true
+  pre_tasks:
+    - name: Check if OS distribution is some Debian kind
+      fail:
+        msg: "OS distribution {{ ansible_os_family }} is not Debian family!"
+      when: (not ansible_os_family == 'Debian')
+  roles:
+    - { role: docker }
+    - { role: kind }

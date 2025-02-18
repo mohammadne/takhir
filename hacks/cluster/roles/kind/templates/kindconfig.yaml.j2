@@ -1,0 +1,40 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  ipFamily: ipv4
+  kubeProxyMode: "ipvs"
+  podSubnet: {{ kind_pods_cidr }}
+  serviceSubnet: {{ kind_services_cidr }}
+  apiServerAddress: 0.0.0.0
+  apiServerPort: {{ kind_api_server_port }}
+nodes:
+{% for number in range(1, masters_count + 1) %}
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: ClusterConfiguration
+    apiServer:
+      certSANs:
+        - {{ server_ip_address }}
+        - localhost
+        - 127.0.0.1
+        - 0.0.0.0
+  extraPortMappings:
+  - containerPort: 6443
+    hostPort: 443
+  extraMounts:
+  - hostPath: /dev/
+    containerPath: /dev/
+  labels:
+    openstack-control-plane: enabled
+{% endfor %}
+{% for number in range(1, workers_count + 1) %}
+- role: worker
+  extraMounts:
+  - hostPath: /dev/
+    containerPath: /dev/
+  labels:
+    openstack-compute-node: enabled
+    openstack-network-node: enabled
+    openvswitch: enabled
+{% endfor %}

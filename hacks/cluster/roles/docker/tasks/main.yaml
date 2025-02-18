@@ -1,0 +1,57 @@
+---
+- name: Install required system packages
+  apt:
+    pkg:
+      - software-properties-common
+      - ca-certificates
+      - curl
+      - gnupg
+    state: latest
+    update_cache: true
+
+- name: Add Docker's official GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: grep release information
+  shell: . /etc/os-release && echo "$VERSION_CODENAME"
+  register: release_info
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu "{{ release_info.stdout }}" stable
+    state: present
+
+- name: Install docker
+  apt:
+    pkg:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: latest
+    update_cache: true
+
+- name: Get current username
+  become: false
+  command: whoami
+  register: whoami
+  changed_when: false
+
+- name: Add docker group to users {{ whoami }} groups
+  user:
+    name: "{{ whoami.stdout }}"
+    append: true
+    groups: docker
+
+- name: make sure that docker was started and enabled
+  ansible.builtin.systemd_service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Include proxy tasks
+  include_tasks: proxy.yaml
+  when: proxy.enabled is defined and proxy.enabled | bool

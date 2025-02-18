@@ -1,0 +1,7 @@
+---
+- name: Install kind (if not present)
+  include_tasks: install.yaml
+
+- name: Create k8s cluster (if not exists)
+  include_tasks: cluster.yaml
+

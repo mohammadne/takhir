@@ -1,0 +1,38 @@
+---
+# sudo bash -c 'curl https://assets.bandar.sotoon.ir/ca.crt > /usr/share/ca-certificates/bandar.crt'
+- name: Download proxy certificate
+  ansible.builtin.get_url:
+    url: "{{ proxy.certificate.address }}"
+    dest: "/usr/share/ca-certificates/{{ proxy.certificate.name }}.crt"
+
+# sudo bash -c 'echo "bandar.crt" >> /etc/ca-certificates.conf'
+- name: Add certificate to /etc/ca-certificates.conf
+  ansible.builtin.lineinfile:
+    path: /etc/ca-certificates.conf
+    line: "{{ proxy.certificate.name }}.crt"
+
+# sudo update-ca-certificates --fresh
+- name: Update ca-certificates
+  ansible.builtin.command: update-ca-certificates --fresh
+  register: result
+
+- name: Ensure systemd directory exists for docker
+  file:
+    path: "{{ docker_systemd_directory }}"
+    state: directory
+
+- name: Write docker proxy configuration file
+  template:
+    src: http-proxy.conf.j2
+    dest: "{{ docker_systemd_directory }}/http-proxy.conf"
+    mode: 0644
+
+# sudo systemctl daemon-reload
+# sudo systemctl restart docker.service
+- name: Restart docker service
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    name: docker
+    state: restarted
+    enabled: yes
+

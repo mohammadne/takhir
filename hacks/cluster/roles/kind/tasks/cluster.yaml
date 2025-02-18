@@ -1,0 +1,31 @@
+---
+- name: "Get list of kind clusters"
+  command: kind get clusters
+  register: existing_clusters
+  changed_when: false
+
+- name: "Define kindconfig path variable"
+  become: false
+  set_fact:
+    kindconfig_path: "/tmp/kindconfig.yaml"
+    kubeconfig_path: "{{ ansible_env.HOME }}/.kube/kind-{{ k8s_cluster_name }}.conf"
+
+- name: "Create kindconfig file from template"
+  template:
+    src: kindconfig.yaml.j2
+    dest: "{{ kindconfig_path }}"
+
+- name: "Create kind cluster based on kindconfig file"
+  shell: "kind create cluster --name {{ k8s_cluster_name }} --image {{ kind_k8s_image }} --config {{ kindconfig_path }} --kubeconfig {{ kubeconfig_path }}"
+  when: k8s_cluster_name not in existing_clusters.stdout_lines
+
+- name: Update api-server address
+  ansible.builtin.command:
+    cmd: "yq eval '.clusters[0].cluster.server = \"https://{{ server_ip_address }}:{{ kind_api_server_port }}\"' --inplace {{ kubeconfig_path }}"
+
+# chmod 600 ~/.kube/config
+- name: "Copy kubeconfig file"
+  ansible.builtin.fetch:
+    src: "{{ kubeconfig_path }}"
+    dest: ~/.kube/kind-{{ k8s_cluster_name }}.conf
+    flat: yes
