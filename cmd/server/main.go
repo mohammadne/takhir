@@ -10,8 +10,12 @@ import (
 
 	"github.com/mohammadne/takhir/cmd"
 	"github.com/mohammadne/takhir/internal/api/http"
+	"github.com/mohammadne/takhir/internal/api/http/i18n"
 	"github.com/mohammadne/takhir/internal/config"
 	"github.com/mohammadne/takhir/internal/core"
+	"github.com/mohammadne/takhir/internal/repositories/cache"
+	"github.com/mohammadne/takhir/internal/repositories/storage"
+	"github.com/mohammadne/takhir/internal/usecases"
 	"github.com/mohammadne/takhir/pkg/databases/postgres"
 	"github.com/mohammadne/takhir/pkg/databases/redis"
 	"github.com/mohammadne/takhir/pkg/observability/logger"
@@ -47,22 +51,35 @@ func main() {
 
 	postgres, err := postgres.Open(cfg.Postgres, core.Namespace, core.System)
 	if err != nil {
-		logger.Fatal(`error connecting to postgres database`, zap.Error(err))
+		logger.Fatal("error connecting to postgres database", zap.Error(err))
 	}
-	_ = postgres
+
+	// storages
+	storageCategories := storage.NewCategories(logger, postgres)
 
 	redis, err := redis.Open(cfg.Redis)
 	if err != nil {
-		logger.Fatal(`error connecting to redis database`, zap.Error(err))
+		logger.Fatal("error connecting to redis database", zap.Error(err))
 	}
-	_ = redis
+
+	// caches
+	cacheCategories := cache.NewCategories(logger, redis)
+
+	// usecases
+	usecasesCategories := usecases.NewCategories(logger, cacheCategories, storageCategories)
+
+	i18n, err := i18n.New(logger)
+	if err != nil {
+		logger.Fatal("failed to load i18n", zap.Error(err))
+	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	var wg sync.WaitGroup
 
 	wg.Add(1)
-	go http.New(logger).Serve(ctx, &wg, *monitorPort, *requestPort)
+	go http.New(logger, i18n, usecasesCategories).
+		Serve(ctx, &wg, *monitorPort, *requestPort)
 
 	<-ctx.Done()
 	wg.Wait()

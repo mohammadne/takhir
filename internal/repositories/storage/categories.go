@@ -37,7 +37,6 @@ type categories struct {
 var (
 	FailureCategoriesNotFound       = entities.NewFailure("failure_categories_not_found")
 	FailureRetrievingCategoriesRows = entities.NewFailure("failure_retrieving_categories_rows")
-	FailureScanningCategoryRow      = entities.NewFailure("failure_retrieving_categories_rows")
 )
 
 func (c *categories) AllCategories(ctx context.Context) (result []Category, f entities.Failure) {

@@ -8,10 +8,13 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
-	"github.com/mohammadne/takhir/internal/api/http/handlers"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	"github.com/mohammadne/takhir/internal/api/http/handlers"
+	"github.com/mohammadne/takhir/internal/api/http/i18n"
+	"github.com/mohammadne/takhir/internal/usecases"
 )
 
 type Server struct {
@@ -21,7 +24,9 @@ type Server struct {
 	requestApp *fiber.App
 }
 
-func New(log *zap.Logger) *Server {
+func New(log *zap.Logger, i18n i18n.I18N,
+	categoriesUsecase usecases.Categories,
+) *Server {
 	server := &Server{logger: log}
 	fiberConfig := fiber.Config{DisableStartupMessage: true}
 
@@ -37,8 +42,7 @@ func New(log *zap.Logger) *Server {
 	server.requestApp = fiber.New(fiberConfig)
 
 	v1 := server.requestApp.Group("api/v1")
-	handlers.NewCategories(v1, log)
-	handlers.NewItems(v1, log)
+	handlers.NewCategories(v1, log, i18n, categoriesUsecase)
 
 	return server
 }

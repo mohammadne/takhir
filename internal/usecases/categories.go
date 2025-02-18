@@ -34,6 +34,10 @@ type categories struct {
 	categoriesStorage storage.Categories
 }
 
+var (
+	FailureRetrievingCategories = entities.NewFailure("failure_retrieving_categories")
+)
+
 func (c *categories) AllCategories(ctx context.Context) ([]entities.Category, entities.Failure) {
 	categories, failure := c.categoriesCache.AllCategories(ctx)
 	if failure == nil {
@@ -42,7 +46,8 @@ func (c *categories) AllCategories(ctx context.Context) ([]entities.Category, en
 
 	storageCategories, failure := c.categoriesStorage.AllCategories(ctx)
 	if failure != nil {
-		return nil, nil
+		c.logger.Error(FailureRetrievingCategories.Error(), zap.Error(failure))
+		return nil, FailureRetrievingCategories
 	}
 
 	categories = make([]entities.Category, 0, len(storageCategories))

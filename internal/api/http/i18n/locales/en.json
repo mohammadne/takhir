@@ -1,0 +1,8 @@
+{
+    "categories": {
+        "list": {
+            "error": "Internal error while retrieving categories",
+            "success": "Categories have been retrieved successfully"
+        }
+    }
+}
