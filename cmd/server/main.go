@@ -47,7 +47,7 @@ func main() {
 		log.Fatalf("failed to initialize logger: \n%v", err)
 	}
 
-	logger.Info("BuildInfo", zap.Any("data", cmd.BuildInfo()))
+	logger.Warn("Build Information", cmd.BuildInfo()...)
 
 	postgres, err := postgres.Open(cfg.Postgres, core.Namespace, core.System)
 	if err != nil {

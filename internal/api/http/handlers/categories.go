@@ -1,11 +1,14 @@
 package handlers
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 
 	"github.com/mohammadne/zanbil/internal/api/http/i18n"
 	"github.com/mohammadne/zanbil/internal/api/http/models"
+	"github.com/mohammadne/zanbil/internal/entities"
 	"github.com/mohammadne/zanbil/internal/usecases"
 )
 
@@ -19,7 +22,8 @@ func NewCategories(router fiber.Router, logger *zap.Logger, i18n i18n.I18N,
 	}
 
 	categories := router.Group("categories")
-	categories.Get("/", handler.list)
+	categories.Get("/", handler.allCategories)
+	categories.Get("/:id/products", handler.listCategoryProducts)
 }
 
 type categories struct {
@@ -30,16 +34,38 @@ type categories struct {
 	categoriesUsecase usecases.Categories
 }
 
-func (c *categories) list(ctx *fiber.Ctx) error {
+func (c *categories) allCategories(ctx *fiber.Ctx) error {
 	response := &models.Response{}
+	language, _ := ctx.Locals("language").(entities.Language)
 
-	categories, failure := c.categoriesUsecase.AllCategories(ctx.Context())
-	if failure != nil {
-		response.Message = c.i18n.Translate("categories.list.error", "fa")
+	categories, error := c.categoriesUsecase.AllCategories(ctx.Context())
+	if error != nil {
+		response.Message = c.i18n.Translate("categories.all_categories.error", language)
 		return response.Write(ctx, fiber.StatusInternalServerError)
 	}
 
 	response.Data = map[string]any{"categories": categories}
-	response.Message = c.i18n.Translate("categories.list.success", "fa")
+	response.Message = c.i18n.Translate("categories.all_categories.success", language)
+	return response.Write(ctx, fiber.StatusOK)
+}
+
+func (c *categories) listCategoryProducts(ctx *fiber.Ctx) error {
+	response := &models.Response{}
+	language, _ := ctx.Locals("language").(entities.Language)
+
+	categoryID, err := strconv.ParseUint(ctx.Params("id"), 10, 64)
+	if err != nil || categoryID <= 0 {
+		response.Message = c.i18n.Translate("categories.list_category_products.invalid_category_id", language)
+		return response.Write(ctx, fiber.StatusBadRequest)
+	}
+
+	categories, error := c.categoriesUsecase.ListCategoryProducts(ctx.Context(), categoryID, nil)
+	if error != nil {
+		response.Message = c.i18n.Translate("categories.list_category_products.error", language)
+		return response.Write(ctx, fiber.StatusInternalServerError)
+	}
+
+	response.Data = map[string]any{"categories": categories}
+	response.Message = c.i18n.Translate("categories.list_category_products.success", language)
 	return response.Write(ctx, fiber.StatusOK)
 }

@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"runtime"
+
+	"go.uber.org/zap"
 )
 
 // Default build-time variable.
@@ -13,14 +15,15 @@ var (
 	APIVersion = "v0.1.0"
 )
 
-func BuildInfo() map[string]string {
-	return map[string]string{
-		`Version`:     Version,
-		`API Version`: APIVersion,
-		`Go Version`:  runtime.Version(),
-		`Git Commit`:  GitCommit,
-		`Built At`:    BuildTime,
-		`OS`:          runtime.GOOS,
-		`Arch`:        runtime.GOARCH,
+func BuildInfo() []zap.Field {
+
+	return []zap.Field{
+		zap.String("Version", Version),
+		zap.String("API Version", APIVersion),
+		zap.String("Go Version", runtime.Version()),
+		zap.String("Git Commit", GitCommit),
+		zap.String("Built At", BuildTime),
+		zap.String("OS", runtime.GOOS),
+		zap.String("Arch", runtime.GOARCH),
 	}
 }

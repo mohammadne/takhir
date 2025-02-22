@@ -14,6 +14,7 @@ import (
 
 	"github.com/mohammadne/zanbil/internal/api/http/handlers"
 	"github.com/mohammadne/zanbil/internal/api/http/i18n"
+	"github.com/mohammadne/zanbil/internal/api/http/middlewares"
 	"github.com/mohammadne/zanbil/internal/usecases"
 )
 
@@ -42,6 +43,11 @@ func New(log *zap.Logger, i18n i18n.I18N,
 	server.requestApp = fiber.New(fiberConfig)
 
 	v1 := server.requestApp.Group("api/v1")
+
+	// middlewares
+	middlewares.NewLanguage(v1, log)
+
+	// handlers
 	handlers.NewCategories(v1, log, i18n, categoriesUsecase)
 
 	return server

@@ -12,6 +12,7 @@ import (
 
 type Categories interface {
 	AllCategories(ctx context.Context) ([]entities.Category, error)
+	ListCategoryProducts(ctx context.Context, id uint64, options *entities.ListOptions) ([]entities.Category, error)
 }
 
 func NewCategories(logger *zap.Logger,
@@ -63,4 +64,9 @@ func (c *categories) AllCategories(ctx context.Context) ([]entities.Category, er
 	go c.categoriesCache.SetAllCategories(context.Background(), categories)
 
 	return categories, nil
+}
+
+func (c *categories) ListCategoryProducts(ctx context.Context, id uint64,
+	options *entities.ListOptions) ([]entities.Category, error) {
+	return nil, nil
 }
