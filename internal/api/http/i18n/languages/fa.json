@@ -1,8 +1,13 @@
 {
     "categories": {
-        "list": {
+        "all_categories": {
             "error": "خطای داخلی هنگام دریافت دسته‌بندی‌ها",
             "success": "دسته‌بندی‌ها با موفقیت دریافت شدند"
+        },
+        "list_category_products": {
+            "invalid_category_id": "Invalid category id has been given",
+            "error": "Internal error while retrieving Category's products",
+            "success": "Category's products have been retrieved successfully"
         }
     }
 }
