@@ -29,26 +29,26 @@ func New(log *zap.Logger, i18n i18n.I18N,
 	categoriesUsecase usecases.Categories,
 ) *Server {
 	server := &Server{logger: log}
-	fiberConfig := fiber.Config{DisableStartupMessage: true}
 
-	// ----------------------------------------- Monitor Endpoints
+	{ // Monitor Endpoints
+		monitorConfig := fiber.Config{DisableStartupMessage: true}
+		server.monitorApp = fiber.New(monitorConfig)
 
-	server.monitorApp = fiber.New(fiberConfig)
+		server.monitorApp.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
+		handlers.NewHealthz(server.monitorApp, log)
+	}
 
-	server.monitorApp.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
-	handlers.NewHealthz(server.monitorApp, log)
+	{ //  Request Endpoints
+		requestConfig := fiber.Config{DisableStartupMessage: true}
+		server.requestApp = fiber.New(requestConfig)
 
-	// ----------------------------------------- Request Endpoints
+		handlers.NewTemplates(server.requestApp, log)
 
-	server.requestApp = fiber.New(fiberConfig)
-
-	v1 := server.requestApp.Group("api/v1")
-
-	// middlewares
-	middlewares.NewLanguage(v1, log)
-
-	// handlers
-	handlers.NewCategories(v1, log, i18n, categoriesUsecase)
+		v1 := server.requestApp.Group("api/v1")
+		middlewares.NewLanguage(v1, log)
+		handlers.NewCategories(v1, log, i18n, categoriesUsecase)
+		handlers.NewProducts(v1, log, i18n, categoriesUsecase)
+	}
 
 	return server
 }
