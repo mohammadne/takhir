@@ -12,7 +12,7 @@ import (
 
 type Categories interface {
 	AllCategories(ctx context.Context) ([]entities.Category, error)
-	ListCategoryProducts(ctx context.Context, id uint64, options *entities.ListOptions) ([]entities.Category, error)
+	ListCategoryProducts(ctx context.Context, id uint64, options *entities.ListOptions) ([]entities.Product, error)
 }
 
 func NewCategories(logger *zap.Logger,
@@ -67,6 +67,11 @@ func (c *categories) AllCategories(ctx context.Context) ([]entities.Category, er
 }
 
 func (c *categories) ListCategoryProducts(ctx context.Context, id uint64,
-	options *entities.ListOptions) ([]entities.Category, error) {
-	return nil, nil
+	options *entities.ListOptions) ([]entities.Product, error) {
+	products := []entities.Product{
+		{ID: 101, Name: "Smartphone", Price: "$299", Description: "Latest model", CategoryID: id},
+		{ID: 102, Name: "Laptop", Price: "$899", Description: "Powerful laptop", CategoryID: id},
+	}
+
+	return products, nil
 }

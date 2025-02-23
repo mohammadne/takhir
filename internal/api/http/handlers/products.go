@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mohammadne/zanbil/internal/api/http/i18n"
+	"github.com/mohammadne/zanbil/internal/entities"
 	"github.com/mohammadne/zanbil/internal/usecases"
 	"go.uber.org/zap"
 )
@@ -32,7 +33,12 @@ type products struct {
 }
 
 func (h *products) listProducts(c *fiber.Ctx) error {
-	return c.SendStatus(http.StatusNotImplemented)
+	products := []entities.Product{
+		{ID: 201, Name: "T-shirt", Price: "$19", Description: "Comfortable fabric"},
+		{ID: 202, Name: "Headphones", Price: "$99", Description: "Noise-cancelling"},
+	}
+
+	return c.Status(http.StatusOK).JSON(products)
 }
 
 func (h *products) retrieveProduct(c *fiber.Ctx) error {

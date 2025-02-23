@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Name }} - Product Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>{{ .Name }}</h1>
+    <p>{{ .Description }}</p>
+    <p><strong>Price:</strong> {{ .Price }}</p>
+
+    <button onclick="window.history.back()">Go Back</button>
+
+</body>
+
+</html>

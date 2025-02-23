@@ -1,12 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Main</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - E-Commerce</title>
+    <script>
+        let currentCategory = "all";
+        let currentPage = 1;
+
+        async function fetchProducts(categoryId = "all", page = 1) {
+            currentCategory = categoryId;
+            currentPage = page;
+
+            let url = categoryId === "all"
+                ? `/api/v1/products?page=${page}`
+                : `/api/v1/categories/${categoryId}/products?page=${page}`;
+
+            try {
+                const response = await fetch(url);
+                const products = await response.json();
+                renderProducts(products);
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            }
+        }
+
+        function renderProducts(products) {
+            const productList = document.getElementById("product-list");
+            productList.innerHTML = "";
+
+            products.forEach(product => {
+                let productItem = document.createElement("div");
+                productItem.className = "product";
+                productItem.innerHTML = `<h3>${product.Name}</h3>
+                                         <p>Price: ${product.Price}</p>
+                                         <button onclick="viewProduct(${product.ID})">View Details</button>`;
+                productList.appendChild(productItem);
+            });
+        }
+
+        function viewProduct(productId) {
+            window.location.href = `/product/${productId}`;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetchProducts(); // Load all products initially
+
+            document.querySelectorAll(".category").forEach(category => {
+                category.addEventListener("click", function () {
+                    fetchProducts(this.dataset.id);
+                });
+            });
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .category-list {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .category {
+            padding: 10px;
+            border: 1px solid black;
+            cursor: pointer;
+        }
+
+        .product {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 5px 0;
+        }
+    </style>
 </head>
 
 <body>
-    {{embed}}
+
+    <h1>Welcome to Our E-Commerce Store</h1>
+
+    <div class="category-list">
+        <div class="category" data-id="all">All</div>
+        {{range .Categories}}
+        <div class="category" data-id="{{.ID}}">{{.Name}}</div>
+        {{end}}
+    </div>
+
+    <div id="product-list">
+        <p>Loading products...</p>
+    </div>
+
 </body>
 
 </html>
