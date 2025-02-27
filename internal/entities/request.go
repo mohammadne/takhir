@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"net/url"
 	"strconv"
 )
 
@@ -35,12 +34,12 @@ type ListOptions struct {
 	Search     string
 }
 
-func QueryParamsToListOptions(queryParams url.Values) *ListOptions {
-	pageSizeString := queryParams.Get("page_size")
-	lastIdString := queryParams.Get("last_id")
-	pageString := queryParams.Get("page")
-	withCountsString := queryParams.Get("with_counts")
-	searchString := queryParams.Get("search")
+func QueryParamsToListOptions(queryParams map[string]string) *ListOptions {
+	pageSizeString := queryParams["page_size"]
+	lastIdString := queryParams["last_id"]
+	pageString := queryParams["page"]
+	withCountsString := queryParams["with_counts"]
+	searchString := queryParams["search"]
 
 	pageSize, _ := strconv.Atoi(pageSizeString)
 	lastId, _ := strconv.Atoi(lastIdString)

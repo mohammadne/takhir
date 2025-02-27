@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -19,10 +19,10 @@ type healthz struct {
 	logger *zap.Logger
 }
 
-func (h *healthz) liveness(c *fiber.Ctx) error {
+func (h *healthz) liveness(c fiber.Ctx) error {
 	return c.SendStatus(http.StatusOK)
 }
 
-func (h *healthz) readiness(c *fiber.Ctx) error {
+func (h *healthz) readiness(c fiber.Ctx) error {
 	return c.SendStatus(http.StatusOK)
 }

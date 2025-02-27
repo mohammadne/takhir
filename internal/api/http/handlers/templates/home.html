@@ -4,96 +4,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - E-Commerce</title>
+    <title>Zanbil Store</title>
+    <link rel="stylesheet" href="/static/styles.css">
     <script>
-        let currentCategory = "all";
-        let currentPage = 1;
+        let currentCategory;
+        let currentPage;
+        let pageSize;
+        let totalPages;
+        let isLoading = false;
 
-        async function fetchProducts(categoryId = "all", page = 1) {
-            currentCategory = categoryId;
-            currentPage = page;
+        // Set page size dynamically based on selection
+        function setPageSize() {
+            pageSize = parseInt(document.getElementById("pageSizeSelect").value);
+            fetchProducts();
+        }
 
-            let url = categoryId === "all"
-                ? `/api/v1/products?page=${page}`
-                : `/api/v1/categories/${categoryId}/products?page=${page}`;
+        function fetchProducts() {
+            if (isLoading) return;  // Prevent multiple simultaneous requests
 
-            try {
-                const response = await fetch(url);
-                const products = await response.json();
-                renderProducts(products);
-            } catch (error) {
-                console.error("Error fetching products:", error);
+            isLoading = true;
+            document.getElementById("loadingMessage").style.display = "block";  // Show loading message
+            document.getElementById("errorMessage").style.display = "none";  // Hide error message
+            let params = "?page=" + currentPage + "&page_size=" + pageSize + "&with_counts=true";
+
+            let url = "/api/v1/products" + params;
+            if (currentCategory !== "all") {
+                url = `/api/v1/categories/${currentCategory}/products` + params;
             }
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    isLoading = false;
+                    document.getElementById("loadingMessage").style.display = "none";  // Hide loading message
+                    if (data && data.products) {
+                        totalPages = Math.ceil(data.total_count / pageSize);
+                        renderProducts(data.products);
+                        updatePagination();
+                    } else {
+                        showError("No products found.");
+                    }
+                })
+                .catch(error => {
+                    isLoading = false;
+                    document.getElementById("loadingMessage").style.display = "none";  // Hide loading message
+                    showError("Error fetching products. Please try again.");
+                    console.error("Error fetching products:", error);
+                });
         }
 
         function renderProducts(products) {
-            const productList = document.getElementById("product-list");
+            let productList = document.getElementById("productList");
             productList.innerHTML = "";
 
             products.forEach(product => {
-                let productItem = document.createElement("div");
-                productItem.className = "product";
-                productItem.innerHTML = `<h3>${product.Name}</h3>
-                                         <p>Price: ${product.Price}</p>
-                                         <button onclick="viewProduct(${product.ID})">View Details</button>`;
-                productList.appendChild(productItem);
+                let div = document.createElement("div");
+                div.className = "product";
+                div.innerHTML = `<h3><a href="/product/${product.ID}">${product.Name}</a></h3>
+                                 <p>${product.Description}</p>
+                                 <p><strong>Price:</strong> ${product.Price}</p>`;
+                productList.appendChild(div);
             });
         }
 
-        function viewProduct(productId) {
-            window.location.href = `/product/${productId}`;
+        function updatePagination() {
+            let pageSelect = document.getElementById("pageSelect");
+            pageSelect.innerHTML = "";
+            for (let i = 1; i <= totalPages; i++) {
+                let option = document.createElement("option");
+                option.value = i;
+                option.text = i;
+                if (i === currentPage) option.selected = true;
+                pageSelect.appendChild(option);
+            }
         }
 
-        document.addEventListener("DOMContentLoaded", function () {
-            fetchProducts(); // Load all products initially
+        function changePage() {
+            currentPage = parseInt(document.getElementById("pageSelect").value);
+            fetchProducts();
+        }
 
-            document.querySelectorAll(".category").forEach(category => {
-                category.addEventListener("click", function () {
-                    fetchProducts(this.dataset.id);
-                });
-            });
-        });
+        function changeLanguage() {
+            currentCategory = document.getElementById("languageSelect").value;
+            fetchProducts();
+        }
+
+        function changeCategory() {
+            currentCategory = document.getElementById("categorySelect").value;
+            currentPage = 1;
+            fetchProducts();
+        }
+
+        function showError(message) {
+            let errorMessage = document.getElementById("errorMessage");
+            errorMessage.innerText = message;
+            errorMessage.style.display = "block";
+        }
+
+        window.onload = function () {
+            currentCategory = "all"; // Default: All products
+            currentPage = 1;
+            pageSize = 5; // Default page-size is 5
+
+            // Reset to default values on page load
+            document.getElementById("categorySelect").value = currentCategory;
+            document.getElementById("pageSizeSelect").value = pageSize;
+
+            fetchProducts();
+        };
     </script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-
-        .category-list {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .category {
-            padding: 10px;
-            border: 1px solid black;
-            cursor: pointer;
-        }
-
-        .product {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin: 5px 0;
-        }
-    </style>
 </head>
 
 <body>
 
-    <h1>Welcome to Our E-Commerce Store</h1>
+    <h1>Zanbil Store</h1>
 
-    <div class="category-list">
-        <div class="category" data-id="all">All</div>
-        {{range .Categories}}
-        <div class="category" data-id="{{.ID}}">{{.Name}}</div>
-        {{end}}
+    <!-- Header with Category Selection, Pagination, and Search Bar -->
+    <div class="header">
+        <div class="category-pagination">
+            <!-- Category Dropdown -->
+            <label for="categorySelect">Category:</label>
+            <select id="categorySelect" onchange="changeCategory()">
+                <option value="all" selected>All</option>
+                {{ range .Categories }}
+                <option value="{{ .ID }}">{{ .Name }}</option>
+                {{ end }}
+            </select>
+
+            <!-- Page Size Dropdown -->
+            <label for="pageSizeSelect">Page Size:</label>
+            <select id="pageSizeSelect" onchange="setPageSize()">
+                <option value="2">2</option>
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+            </select>
+
+            <!-- Pagination Dropdown -->
+            <div>
+                <label for="pageSelect">Page:</label>
+                <select id="pageSelect" onchange="changePage()"></select>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search products..." onkeyup="fetchProducts()" />
+        </div>
     </div>
 
-    <div id="product-list">
-        <p>Loading products...</p>
+    <!-- Loading Message -->
+    <div id="loadingMessage" class="loading" style="display:none;">
+        Loading...
     </div>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="error" style="display:none;"></div>
+
+    <!-- Product List -->
+    <div id="productList"></div>
 
 </body>
 

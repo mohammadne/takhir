@@ -3,7 +3,7 @@ package handlers
 import (
 	"strconv"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 
 	"github.com/mohammadne/zanbil/internal/api/http/i18n"
@@ -34,7 +34,7 @@ type categories struct {
 	categoriesUsecase usecases.Categories
 }
 
-func (c *categories) allCategories(ctx *fiber.Ctx) error {
+func (c *categories) allCategories(ctx fiber.Ctx) error {
 	response := &models.Response{}
 	language, _ := ctx.Locals("language").(entities.Language)
 
@@ -49,7 +49,7 @@ func (c *categories) allCategories(ctx *fiber.Ctx) error {
 	return response.Write(ctx, fiber.StatusOK)
 }
 
-func (c *categories) listCategoryProducts(ctx *fiber.Ctx) error {
+func (c *categories) listCategoryProducts(ctx fiber.Ctx) error {
 	response := &models.Response{}
 	language, _ := ctx.Locals("language").(entities.Language)
 

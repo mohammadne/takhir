@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/adaptor"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/adaptor"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -31,7 +31,7 @@ func New(log *zap.Logger, i18n i18n.I18N,
 	server := &Server{logger: log}
 
 	{ // Monitor Endpoints
-		monitorConfig := fiber.Config{DisableStartupMessage: true}
+		monitorConfig := fiber.Config{}
 		server.monitorApp = fiber.New(monitorConfig)
 
 		server.monitorApp.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
@@ -39,7 +39,7 @@ func New(log *zap.Logger, i18n i18n.I18N,
 	}
 
 	{ //  Request Endpoints
-		requestConfig := fiber.Config{DisableStartupMessage: true}
+		requestConfig := fiber.Config{}
 		server.requestApp = fiber.New(requestConfig)
 
 		handlers.NewTemplates(server.requestApp, log)
