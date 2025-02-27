@@ -1,12 +1,21 @@
 # Cluster
 
+## Setup
+
 ```sh
 # create .vault_pass file and store your password there
-touch .vault_pass
+echo 'strong-password' > .vault_pass
 
-# create proxy_address for your proxy role (if included)
-ansible-vault encrypt_string --vault-password-file .vault_pass 'http://address:port' --name 'proxy_address'
+# create server_ip_address for your kind variables
+ansible-vault encrypt_string --vault-password-file .vault_pass '195.248.243.80' --name 'server_ip_address'
 
 # run playbook against your host
 ansible-playbook playbook.yaml -i inventory.ini --vault-password-file=.vault_pass
+```
+
+## Usage
+
+```sh
+export KUBECONFIG=~/.kube/kind-zanbil.conf
+kubectl get nodes
 ```

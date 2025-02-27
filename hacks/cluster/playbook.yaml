@@ -1,4 +1,4 @@
-- hosts: server
+- hosts: webservers
   become: yes
   gather_facts: true
   pre_tasks:
@@ -7,5 +7,6 @@
         msg: "OS distribution {{ ansible_os_family }} is not Debian family!"
       when: (not ansible_os_family == 'Debian')
   roles:
-    - { role: docker }
+    # - { role: docker }
+    - { role: yq }
     - { role: kind }

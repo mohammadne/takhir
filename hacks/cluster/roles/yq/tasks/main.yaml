@@ -1,0 +1,29 @@
+---
+- name: Check if yq already installed into {{ user_bin_directory }}
+  stat:
+    path: "{{ user_bin_directory }}/yq"
+  register: yq_status
+
+- name: Check installed yq version
+  shell: "{{ user_bin_directory }}/yq --version | awk '{print $4}'"
+  changed_when: false
+  register: yq_installed_version
+  when: yq_status.stat.exists
+
+- name: Installation will be skipped
+  set_fact:
+    skip_installation: "{{ yq_status.stat.exists and yq_version == yq_installed_version.stdout }}"
+
+- name: Remove old yq binary
+  file:
+    path: "{{ user_bin_directory }}/yq"
+    state: absent
+  when: not skip_installation
+
+- name: Download yq binary
+  get_url:
+    url: "https://github.com/mikefarah/yq/releases/download/{{ yq_version }}/yq_linux_amd64"
+    dest: "{{ user_bin_directory }}/yq"
+    mode: 0755
+    force: true
+  when: not skip_installation

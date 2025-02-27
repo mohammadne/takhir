@@ -4,4 +4,3 @@
 
 - name: Create k8s cluster (if not exists)
   include_tasks: cluster.yaml
-
